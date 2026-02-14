@@ -1,4 +1,5 @@
 ---
+id: skill-id
 name: template-skill
 description: Replace with a description of what this skill does and when an agent should use it.
 metadata:

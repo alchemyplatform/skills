@@ -1,41 +1,64 @@
-# Alchemy Skills
+# Alchemy Skill
 
-Agent Skills for integrating [Alchemy](https://www.alchemy.com/) APIs into AI-powered applications. Built on the [Agent Skills](https://agentskills.io/specification) specification.
+Root Agent Skill for integrating [Alchemy](https://www.alchemy.com/) APIs into AI-powered applications.
 
-## What are Agent Skills?
+## Repository Structure
 
-Skills are modular, self-contained packages that extend AI agents with specialized knowledge. Each skill follows a progressive disclosure pattern:
+This repo uses a single-skill layout:
 
-1. **Metadata** (~100 tokens) — `name` and `description` loaded at startup for all skills
-2. **Instructions** (<5000 tokens) — Full `SKILL.md` body loaded when the skill is activated
-3. **References** (on demand) — Detailed docs in `references/` loaded only when needed
-
-## Skills
-
-| Skill | Description |
-| --- | --- |
-| [alchemy-overview](skills/alchemy-overview/) | Quick-start guide, base URLs, auth, and endpoint selector for all Alchemy products |
-| [node-apis](skills/node-apis/) | Core JSON-RPC and WebSocket APIs for EVM chains |
-| [data-apis](skills/data-apis/) | Token balances, NFT data, transfers, prices, portfolio, and simulation APIs |
-| [webhooks](skills/webhooks/) | Push-based blockchain event delivery via Notify API |
-| [wallets](skills/wallets/) | Smart wallet tooling, Account Kit, bundler, and gas manager |
-| [solana](skills/solana/) | Solana JSON-RPC, DAS (Digital Asset Standard), and wallet integration |
-| [yellowstone-grpc](skills/yellowstone-grpc/) | High-throughput Solana streaming via Yellowstone gRPC |
-| [operational](skills/operational/) | Auth, rate limits, monitoring, alerting, and production readiness |
-| [recipes](skills/recipes/) | End-to-end workflows combining multiple Alchemy APIs |
-| [rollups](skills/rollups/) | Overview of Alchemy Rollups for custom L2/L3 chains |
-| [ecosystem](skills/ecosystem/) | Open-source libraries (viem, ethers, wagmi, Hardhat, Foundry, etc.) |
+- `SKILL.md`: root guide and entrypoint
+- `references/`: all reference docs in a flat folder with category-prefixed filenames
+- `spec/`: Agent Skills spec reference
+- `template/`: supporting template files
 
 ## Getting Started
 
-1. Get an API key at [dashboard.alchemy.com](https://dashboard.alchemy.com/)
-2. Start with the [alchemy-overview](skills/alchemy-overview/) skill for base URLs and quickstart examples
-3. Dive into specific skills for detailed API guidance
+1. Get an API key at [dashboard.alchemy.com](https://dashboard.alchemy.com/).
+2. Start with [`SKILL.md`](SKILL.md) for base URLs, auth patterns, and quickstart snippets.
+3. Use the category overview files in `references/` to dive into specific topics.
+
+## Endpoint Selector (Top Tasks)
+
+| You need | Use this | Skill / File |
+| --- | --- | --- |
+| EVM read/write | JSON-RPC `eth_*` | `node-apis` → `references/node-json-rpc.md` |
+| Realtime events | `eth_subscribe` | `node-apis` → `references/node-websocket-subscriptions.md` |
+| Token balances | `alchemy_getTokenBalances` | `data-apis` → `references/data-token-api.md` |
+| Token metadata | `alchemy_getTokenMetadata` | `data-apis` → `references/data-token-api.md` |
+| Transfers history | `alchemy_getAssetTransfers` | `data-apis` → `references/data-transfers-api.md` |
+| NFT ownership | `GET /getNFTsForOwner` | `data-apis` → `references/data-nft-api.md` |
+| NFT metadata | `GET /getNFTMetadata` | `data-apis` → `references/data-nft-api.md` |
+| Prices (spot) | `GET /tokens/by-symbol` | `data-apis` → `references/data-prices-api.md` |
+| Prices (historical) | `POST /tokens/historical` | `data-apis` → `references/data-prices-api.md` |
+| Portfolio (multi-chain) | `POST /assets/*/by-address` | `data-apis` → `references/data-portfolio-apis.md` |
+| Simulate tx | `alchemy_simulateAssetChanges` | `data-apis` → `references/data-simulation-api.md` |
+| Create webhook | `POST /create-webhook` | `webhooks` → `references/webhooks-details.md` |
+| Solana NFT data | `getAssetsByOwner` (DAS) | `solana` → `references/solana-das-api.md` |
+
+## Reference Categories
+
+Category order mirrors `SKILL.md`:
+
+| Category | Overview File | Scope |
+| --- | --- | --- |
+| Node | `references/node-overview.md` | EVM JSON-RPC, websockets, debug/trace, utility methods |
+| Data | `references/data-overview.md` | Token, NFT, transfers, prices, portfolio, simulation APIs |
+| Webhooks | `references/webhooks-overview.md` | Notify webhook architecture, payloads, and signature verification |
+| Solana | `references/solana-overview.md` | Solana RPC, DAS, wallets, and Yellowstone gRPC references |
+| Wallets | `references/wallets-overview.md` | Account Kit, smart wallets, bundler, gas manager, wallet APIs |
+| Rollups | `references/rollups-overview.md` | High-level Alchemy Rollups guidance |
+| Recipes | `references/recipes-overview.md` | End-to-end integration workflows across products |
+| Operational | `references/operational-overview.md` | Auth, limits, monitoring, pricing, and production readiness |
+| Ecosystem | `references/ecosystem-overview.md` | External library ecosystem across EVM and Solana |
+
+For the full file-by-file map (name + short description for every reference), see `SKILL.md` → `## Skill Map`.
 
 ## Specification
 
-These skills follow the [Agent Skills specification](https://agentskills.io/specification). See [spec/agent-skills-spec.md](spec/agent-skills-spec.md) for details.
+This skill follows the [Agent Skills specification](https://agentskills.io/specification). See [spec/agent-skills-spec.md](spec/agent-skills-spec.md) for details.
 
-## License
+## Official Links
 
-See individual skill directories for license information.
+- [Developer docs](https://www.alchemy.com/docs)
+- [Get Started guide](https://www.alchemy.com/docs/get-started)
+- [Create a free API key](https://dashboard.alchemy.com/)
