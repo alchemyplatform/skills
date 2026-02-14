@@ -62,3 +62,7 @@ This skill follows the [Agent Skills specification](https://agentskills.io/speci
 - [Developer docs](https://www.alchemy.com/docs)
 - [Get Started guide](https://www.alchemy.com/docs/get-started)
 - [Create a free API key](https://dashboard.alchemy.com/)
+
+## License
+
+MIT
