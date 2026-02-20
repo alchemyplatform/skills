@@ -12,7 +12,7 @@ Traditional API key-based access to all Alchemy products: EVM JSON-RPC, Token AP
 - **Entry point**: [`skills/alchemy-api/SKILL.md`](skills/alchemy-api/SKILL.md)
 
 ### `skills/agentic-gateway`
-Enables autonomous agents to access Alchemy APIs directly, paying per-request with USDC via the x402 protocol. Uses SIWE (Sign-In With Ethereum) authentication.
+Lets agents easily access Alchemy's developer platform. Uses SIWE (Sign-In With Ethereum) authentication and x402 USDC payments.
 
 - **Auth**: SIWE token + x402 USDC payment
 - **Setup**: Generate a wallet and fund it with USDC
@@ -24,7 +24,7 @@ Enables autonomous agents to access Alchemy APIs directly, paying per-request wi
 |---|---|
 | I have an Alchemy API key | `alchemy-api` |
 | I'm building a traditional server or dApp | `alchemy-api` |
-| I'm an autonomous agent paying for API calls | `agentic-gateway` |
+| I'm an agent that needs easy access to Alchemy's developer platform | `agentic-gateway` |
 | I need API method details (params, responses) | `alchemy-api` (then cross-ref gateway URLs) |
 | I need SIWE auth or x402 payment setup | `agentic-gateway` |
 

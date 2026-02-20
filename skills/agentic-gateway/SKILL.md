@@ -1,16 +1,15 @@
 ---
 name: agentic-gateway
 description: |
-  Use when an agent wants to call Alchemy's blockchain APIs without an API key,
-  paying per-request with USDC via the x402 protocol. Covers SIWE authentication,
-  x402 payment flows, wallet setup, and gateway endpoints.
+  Use when an agent wants to easily access Alchemy's developer platform.
+  Covers SIWE authentication, x402 payment flows, wallet setup, and gateway endpoints.
 metadata:
   author: alchemyplatform
   version: "1.0"
 ---
 # Alchemy Agentic Gateway
 
-A skill that enables agents to access Alchemy's blockchain APIs directly. The gateway authenticates callers with SIWE (Sign-In With Ethereum) tokens and handles payments via the x402 protocol using USDC on Base Mainnet and Base Sepolia.
+A skill that lets agents easily access Alchemy's developer platform. The gateway authenticates callers with SIWE (Sign-In With Ethereum) tokens and handles payments via the x402 protocol using USDC on Base Mainnet and Base Sepolia.
 
 > **API method details**: For full API method documentation (parameters, response formats, pagination), see the `alchemy-api` skill's references. This skill covers gateway-specific setup: authentication, payment, and endpoints.
 

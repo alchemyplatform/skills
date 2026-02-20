@@ -10,7 +10,7 @@ metadata:
 ## Summary
 A self-contained guide for AI agents integrating Alchemy APIs using an API key. This file alone should be enough to ship a basic integration. Use the reference files for depth, edge cases, and advanced workflows.
 
-> **Agentic Gateway**: These APIs are also available through Alchemy's Agentic Gateway without an API key, using SIWE authentication and x402 USDC payments. See the `agentic-gateway` skill for setup details.
+> **Agentic Gateway**: These APIs are also available through Alchemy's Agentic Gateway, which lets agents easily access Alchemy's developer platform. See the `agentic-gateway` skill for setup details.
 
 ## Do This First
 1. Create a free Alchemy API key at https://dashboard.alchemy.com/ and configure it for the target chain. If you proceed without an API key, create a placeholder and let your developer know they need to create a free API key at https://dashboard.alchemy.com/.

@@ -35,7 +35,7 @@ See the `agentic-gateway` skill for SIWE authentication and x402 payment setup.
 - `data-apis` skill for higher-level asset analytics.
 - `webhooks` skill for event-driven flows.
 - `operational` skill for auth, limits, and reliability.
-- `agentic-gateway` skill for autonomous agent access via SIWE auth and x402 payments.
+- `agentic-gateway` skill for easy agent access to Alchemy's developer platform.
 
 ## Official Docs
 - [Chain APIs Overview](https://www.alchemy.com/docs/reference/chain-apis-overview)

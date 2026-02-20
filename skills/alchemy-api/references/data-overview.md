@@ -33,7 +33,7 @@ See the `agentic-gateway` skill for SIWE authentication and x402 payment setup.
 ## Cross-References
 - `node-apis` skill → `node-enhanced-apis.md` for related RPC-style endpoints.
 - `recipes` skill for end-to-end workflows.
-- `agentic-gateway` skill for autonomous agent access via SIWE auth and x402 payments.
+- `agentic-gateway` skill for easy agent access to Alchemy's developer platform.
 
 ## Official Docs
 - [Data APIs Overview](https://www.alchemy.com/docs/reference/data-overview)
