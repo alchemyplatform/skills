@@ -63,9 +63,17 @@ curl -s https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
 ## Testing / Mocking
 - Use fixed block ranges in tests.
 
+## Agentic Gateway (x402)
+This API is available through Alchemy's Agentic Gateway without an API key.
+- Base URL: `https://x402.alchemy.com/{chainNetwork}/v2` (Transfers API is JSON-RPC)
+- Auth: `Authorization: SIWE <token>` header (see [gateway-authentication](gateway-authentication.md))
+- Payment: x402 USDC micropayment (see [gateway-payment](gateway-payment.md))
+
 ## Related Files
 - `node-enhanced-apis.md`
 - `recipes-get-transfers-history.md`
+- `gateway-overview.md`
+- `gateway-reference.md`
 
 ## Official Docs
 - [alchemy_getAssetTransfers](https://www.alchemy.com/docs/reference/alchemy-getassettransfers)

@@ -1,6 +1,6 @@
 ---
 name: alchemy
-description: Quick-start guide and root index for integrating Alchemy APIs. Covers base URLs, authentication, endpoint selection, and common patterns across all Alchemy products. Use this skill first when starting any Alchemy integration or when unsure which specific API to use.
+description: Quick-start guide and root index for integrating Alchemy APIs. Covers both traditional API key access and the Agentic Gateway (x402 payment). Use this skill first when starting any Alchemy integration or when unsure which specific API to use.
 metadata:
   author: alchemyplatform
   version: "1.0"
@@ -8,15 +8,37 @@ metadata:
 # AI + Alchemy Integration Guide
 
 ## Summary
-A self-contained guide for AI agents integrating Alchemy APIs. This file alone should be enough to ship a basic integration. Use the other skills for depth, edge cases, and advanced workflows.
+A self-contained guide for AI agents integrating Alchemy APIs. This file alone should be enough to ship a basic integration. Use the reference files for depth, edge cases, and advanced workflows.
 
-## Do This First
+## Two Ways to Access Alchemy APIs
+
+Alchemy APIs can be accessed through two paths:
+
+| | Path A: API Key | Path B: Agentic Gateway |
+|---|---|---|
+| **Best for** | Server apps, dApps, any project with an API key | Autonomous agents paying per-request with USDC |
+| **Auth** | API key in URL or header | SIWE token (`Authorization: SIWE <token>`) |
+| **Payment** | Alchemy plan (free tier available) | x402 USDC micropayment ($0.01/request) |
+| **Setup** | Create key at dashboard.alchemy.com | Generate wallet + fund with USDC |
+| **Base URL** | `https://<network>.g.alchemy.com/v2/$API_KEY` | `https://x402.alchemy.com/{chainNetwork}/v2` |
+
+**Decision helper:**
+- Have an API key or building a traditional app? → **Path A** (see "Do This First" below)
+- Building an autonomous agent that pays for its own API calls? → **Path B** (see "Agentic Gateway Quick Start" below)
+
+Both paths access the same underlying APIs — the same methods, parameters, and response formats apply.
+
+---
+
+## Path A: API Key Access
+
+### Do This First
 1. Create a free Alchemy API key at https://dashboard.alchemy.com/ and configure it for the target chain. If you proceed without an API key, create a placeholder and let your developer know they need to create a free API key at https://dashboard.alchemy.com/.
 2. Choose the right product using the Endpoint Selector below.
 3. Use the Base URLs + Auth table for the correct endpoint and headers.
 4. Copy a Quickstart example and test against a testnet first.
 
-## Base URLs + Auth (Cheat Sheet)
+### Base URLs + Auth (Cheat Sheet)
 | Product | Base URL | Auth | Notes |
 | --- | --- | --- | --- |
 | Ethereum RPC (HTTPS) | `https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY` | API key in URL | Standard EVM reads and writes. |
@@ -34,22 +56,58 @@ A self-contained guide for AI agents integrating Alchemy APIs. This file alone s
 | Portfolio API | `https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY` | API key in URL | Multi-chain wallet views. |
 | Notify API | `https://dashboard.alchemy.com/api` | `X-Alchemy-Token: <ALCHEMY_NOTIFY_AUTH_TOKEN>` | Generate token in dashboard. |
 
-## Endpoint Selector (Top Tasks)
-| You need | Use this | Skill / File |
+---
+
+## Path B: Agentic Gateway (x402)
+
+The Agentic Gateway lets agents call Alchemy APIs and pay per-request with USDC via the x402 protocol — no API key needed.
+
+### Gateway Base URLs
+| Product | Gateway URL | Notes |
 | --- | --- | --- |
-| EVM read/write | JSON-RPC `eth_*` | `node-apis` → `references/node-json-rpc.md` |
-| Realtime events | `eth_subscribe` | `node-apis` → `references/node-websocket-subscriptions.md` |
-| Token balances | `alchemy_getTokenBalances` | `data-apis` → `references/data-token-api.md` |
-| Token metadata | `alchemy_getTokenMetadata` | `data-apis` → `references/data-token-api.md` |
-| Transfers history | `alchemy_getAssetTransfers` | `data-apis` → `references/data-transfers-api.md` |
-| NFT ownership | `GET /getNFTsForOwner` | `data-apis` → `references/data-nft-api.md` |
-| NFT metadata | `GET /getNFTMetadata` | `data-apis` → `references/data-nft-api.md` |
-| Prices (spot) | `GET /tokens/by-symbol` | `data-apis` → `references/data-prices-api.md` |
-| Prices (historical) | `POST /tokens/historical` | `data-apis` → `references/data-prices-api.md` |
-| Portfolio (multi-chain) | `POST /assets/*/by-address` | `data-apis` → `references/data-portfolio-apis.md` |
-| Simulate tx | `alchemy_simulateAssetChanges` | `data-apis` → `references/data-simulation-api.md` |
-| Create webhook | `POST /create-webhook` | `webhooks` → `references/webhooks-details.md` |
-| Solana NFT data | `getAssetsByOwner` (DAS) | `solana` → `references/solana-das-api.md` |
+| Node JSON-RPC | `https://x402.alchemy.com/{chainNetwork}/v2` | Standard + enhanced RPC (Token API, Transfers API, Simulation) |
+| NFT API | `https://x402.alchemy.com/{chainNetwork}/nft/v3/*` | REST NFT endpoints |
+| Prices API | `https://x402.alchemy.com/prices/v1/*` | Token prices (not chain-specific) |
+| Portfolio API | `https://x402.alchemy.com/data/v1/*` | Multi-chain portfolio (not chain-specific) |
+
+### Agentic Gateway Quick Start
+1. **Create a wallet** — Generate an Ethereum private key (see [gateway-wallet-bootstrap](references/gateway-wallet-bootstrap.md))
+2. **Fund with USDC** — Load USDC on Base Mainnet (or Base Sepolia for testnet)
+3. **Create a SIWE token** — Sign a SIWE message to prove wallet ownership (see [gateway-authentication](references/gateway-authentication.md))
+4. **Send requests** — Use `Authorization: SIWE <token>` header. For SDK auto-payment, see [gateway-making-requests](references/gateway-making-requests.md). For quick curl queries, see [gateway-curl-workflow](references/gateway-curl-workflow.md).
+5. **Handle 402** — If the gateway returns 402, create an x402 payment and retry (see [gateway-payment](references/gateway-payment.md))
+
+### Gateway curl Example
+```bash
+TOKEN=$(cat siwe-token.txt)
+
+curl -s -X POST "https://x402.alchemy.com/eth-mainnet/v2" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -H "Authorization: SIWE $TOKEN" \
+  -d '{"id":1,"jsonrpc":"2.0","method":"eth_blockNumber"}'
+```
+
+For full gateway details, see [gateway-overview](references/gateway-overview.md) and [gateway-reference](references/gateway-reference.md).
+
+---
+
+## Endpoint Selector (Top Tasks)
+| You need | Use this | Reference | Gateway available? |
+| --- | --- | --- | --- |
+| EVM read/write | JSON-RPC `eth_*` | `references/node-json-rpc.md` | Yes |
+| Realtime events | `eth_subscribe` | `references/node-websocket-subscriptions.md` | No |
+| Token balances | `alchemy_getTokenBalances` | `references/data-token-api.md` | Yes |
+| Token metadata | `alchemy_getTokenMetadata` | `references/data-token-api.md` | Yes |
+| Transfers history | `alchemy_getAssetTransfers` | `references/data-transfers-api.md` | Yes |
+| NFT ownership | `GET /getNFTsForOwner` | `references/data-nft-api.md` | Yes |
+| NFT metadata | `GET /getNFTMetadata` | `references/data-nft-api.md` | Yes |
+| Prices (spot) | `GET /tokens/by-symbol` | `references/data-prices-api.md` | Yes |
+| Prices (historical) | `POST /tokens/historical` | `references/data-prices-api.md` | Yes |
+| Portfolio (multi-chain) | `POST /assets/*/by-address` | `references/data-portfolio-apis.md` | Yes |
+| Simulate tx | `alchemy_simulateAssetChanges` | `references/data-simulation-api.md` | Yes |
+| Create webhook | `POST /create-webhook` | `references/webhooks-details.md` | No |
+| Solana NFT data | `getAssetsByOwner` (DAS) | `references/solana-das-api.md` | No |
 
 ## One-File Quickstart (Copy/Paste)
 ### EVM JSON-RPC (Read)
@@ -137,6 +195,17 @@ export function verify(rawBody: string, signature: string, secret: string) {
 - De-dupe websocket events on reconnect.
 
 ## Skill Map
+
+### Agentic Gateway
+| File | Name | Short Description |
+| --- | --- | --- |
+| `references/gateway-overview.md` | Gateway Overview | What the Agentic Gateway is, end-to-end flow, required packages |
+| `references/gateway-authentication.md` | Gateway Authentication | SIWE token creation and message signing |
+| `references/gateway-making-requests.md` | Gateway Making Requests | Sending requests with `@x402/fetch` or `@x402/axios` auto-payment |
+| `references/gateway-curl-workflow.md` | Gateway Curl Workflow | Quick RPC calls via curl with token caching (no SDK setup) |
+| `references/gateway-payment.md` | Gateway Payment | Manual x402 payment creation from a 402 response |
+| `references/gateway-wallet-bootstrap.md` | Gateway Wallet Bootstrap | Create a wallet and fund it with USDC |
+| `references/gateway-reference.md` | Gateway Reference | Endpoints, networks, USDC addresses, headers, status codes |
 
 ### Node
 | File | Name | Short Description |

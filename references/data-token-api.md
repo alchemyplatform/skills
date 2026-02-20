@@ -84,9 +84,17 @@ const json = await res.json();
 ## Testing / Mocking
 - Use a known wallet with a small token set for predictable tests.
 
+## Agentic Gateway (x402)
+This API is available through Alchemy's Agentic Gateway without an API key.
+- Base URL: `https://x402.alchemy.com/{chainNetwork}/v2` (Token API methods are JSON-RPC)
+- Auth: `Authorization: SIWE <token>` header (see [gateway-authentication](gateway-authentication.md))
+- Payment: x402 USDC micropayment (see [gateway-payment](gateway-payment.md))
+
 ## Related Files
 - `node-enhanced-apis.md`
 - `recipes-get-token-balances.md`
+- `gateway-overview.md`
+- `gateway-reference.md`
 
 ## Official Docs
 - [Token API Quickstart](https://www.alchemy.com/docs/docs/reference/token-api-quickstart)

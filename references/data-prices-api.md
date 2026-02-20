@@ -76,8 +76,17 @@ curl -s -X POST "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-
 ## Testing / Mocking
 - Use fixed date ranges to keep results stable.
 
+## Agentic Gateway (x402)
+This API is available through Alchemy's Agentic Gateway without an API key.
+- Base URL: `https://x402.alchemy.com/prices/v1/...`
+- Auth: `Authorization: SIWE <token>` header (see [gateway-authentication](gateway-authentication.md))
+- Payment: x402 USDC micropayment (see [gateway-payment](gateway-payment.md))
+- Note: Prices API is not chain-specific — no chain slug in the URL.
+
 ## Related Files
 - `recipes-get-prices-current-historical.md`
+- `gateway-overview.md`
+- `gateway-reference.md`
 
 ## Official Docs
 - [Prices API Reference](https://www.alchemy.com/docs/reference/prices-api)

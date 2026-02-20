@@ -125,11 +125,20 @@ curl -sX POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/nfts/by
 ## Testing / Mocking
 - Use a small wallet address and a limited network list for deterministic tests.
 
+## Agentic Gateway (x402)
+This API is available through Alchemy's Agentic Gateway without an API key.
+- Base URL: `https://x402.alchemy.com/data/v1/...`
+- Auth: `Authorization: SIWE <token>` header (see [gateway-authentication](gateway-authentication.md))
+- Payment: x402 USDC micropayment (see [gateway-payment](gateway-payment.md))
+- Note: Portfolio API is not chain-specific — no chain slug in the URL.
+
 ## Related Files
 - `data-token-api.md`
 - `data-nft-api.md`
 - `data-transfers-api.md`
 - `recipes-get-portfolio.md`
+- `gateway-overview.md`
+- `gateway-reference.md`
 
 ## Official Docs
 - [Portfolio APIs](https://www.alchemy.com/docs/docs/reference/portfolio-apis)

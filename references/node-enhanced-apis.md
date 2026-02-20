@@ -89,9 +89,17 @@ const json = await res.json();
 ## Testing / Mocking
 - Snapshot responses and use fixed block ranges.
 
+## Agentic Gateway (x402)
+These enhanced APIs (Token API, Transfers API) are available through Alchemy's Agentic Gateway without an API key.
+- Base URL: `https://x402.alchemy.com/{chainNetwork}/v2` (same JSON-RPC endpoint)
+- Auth: `Authorization: SIWE <token>` header (see [gateway-authentication](gateway-authentication.md))
+- Payment: x402 USDC micropayment (see [gateway-payment](gateway-payment.md))
+
 ## Related Files
 - `data-overview.md`
 - `recipes-overview.md`
+- `gateway-overview.md`
+- `gateway-reference.md`
 
 ## Official Docs
 - [Enhanced APIs Overview](https://www.alchemy.com/docs/reference/enhanced-apis-overview)

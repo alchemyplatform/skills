@@ -89,10 +89,19 @@ const json = await res.json();
 - Use a fixed block number to make tests deterministic.
 - Use local fixtures for JSON-RPC responses.
 
+## Agentic Gateway (x402)
+This API is available through Alchemy's Agentic Gateway without an API key.
+- Base URL: `https://x402.alchemy.com/{chainNetwork}/v2`
+- Auth: `Authorization: SIWE <token>` header (see [gateway-authentication](gateway-authentication.md))
+- Payment: x402 USDC micropayment (see [gateway-payment](gateway-payment.md))
+- All standard and enhanced JSON-RPC methods are supported via the gateway.
+
 ## Related Files
 - `node-enhanced-apis.md`
 - `data-transfers-api.md`
 - `operational-rate-limits-and-compute-units.md`
+- `gateway-overview.md`
+- `gateway-reference.md`
 
 ## Official Docs
 - [How to Read Data with JSON-RPC](https://www.alchemy.com/docs/how-to-read-data-with-json-rpc)

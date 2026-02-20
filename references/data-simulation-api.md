@@ -78,9 +78,17 @@ curl -s https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
 ## Testing / Mocking
 - Use deterministic calldata and block numbers.
 
+## Agentic Gateway (x402)
+This API is available through Alchemy's Agentic Gateway without an API key.
+- Base URL: `https://x402.alchemy.com/{chainNetwork}/v2` (Simulation methods are JSON-RPC)
+- Auth: `Authorization: SIWE <token>` header (see [gateway-authentication](gateway-authentication.md))
+- Payment: x402 USDC micropayment (see [gateway-payment](gateway-payment.md))
+
 ## Related Files
 - `node-debug-api.md`
 - `recipes-simulate-transaction.md`
+- `gateway-overview.md`
+- `gateway-reference.md`
 
 ## Official Docs
 - [simulateAssetChanges](https://www.alchemy.com/docs/reference/simulateassetchanges-sdk)

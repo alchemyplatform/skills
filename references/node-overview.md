@@ -27,10 +27,14 @@ Core JSON-RPC and WebSocket APIs for EVM chains via Alchemy node endpoints, plus
 - Use `node-enhanced-apis.md` for wallet/asset analytics on EVM without scanning logs.
 - Use Debug/Trace when you need internal call trees or detailed execution flow.
 
+## Agentic Gateway Availability
+Node JSON-RPC and enhanced APIs are also available through Alchemy's Agentic Gateway (`https://x402.alchemy.com/{chainNetwork}/v2`) without an API key, using SIWE authentication and x402 USDC payments. See [gateway-overview](gateway-overview.md) for setup details.
+
 ## Cross-References
 - `data-apis` skill for higher-level asset analytics.
 - `webhooks` skill for event-driven flows.
 - `operational` skill for auth, limits, and reliability.
+- `gateway-overview.md` for Agentic Gateway setup and flow.
 
 ## Official Docs
 - [Chain APIs Overview](https://www.alchemy.com/docs/reference/chain-apis-overview)
