@@ -1,6 +1,6 @@
 # Gateway Overview
 
-The Alchemy Agentic Gateway gives agents direct access to Alchemy's APIs, authenticating with SIWE and paying per-request with USDC via the x402 protocol.
+The Alchemy Agentic Gateway lets agents easily access Alchemy's developer platform, authenticating with SIWE and paying per-request with USDC via the x402 protocol.
 
 ## Base URL
 

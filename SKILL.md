@@ -16,7 +16,7 @@ Alchemy APIs can be accessed through two paths:
 
 | | Path A: API Key | Path B: Agentic Gateway |
 |---|---|---|
-| **Best for** | Server apps, dApps, any project with an API key | Autonomous agents paying per-request with USDC |
+| **Best for** | Server apps, dApps, any project with an API key | Agents that need easy access to Alchemy's developer platform |
 | **Auth** | API key in URL or header | SIWE token (`Authorization: SIWE <token>`) |
 | **Payment** | Alchemy plan (free tier available) | x402 USDC micropayment ($0.01/request) |
 | **Setup** | Create key at dashboard.alchemy.com | Generate wallet + fund with USDC |
@@ -24,7 +24,7 @@ Alchemy APIs can be accessed through two paths:
 
 **Decision helper:**
 - Have an API key or building a traditional app? → **Path A** (see "Do This First" below)
-- Building an autonomous agent that pays for its own API calls? → **Path B** (see "Agentic Gateway Quick Start" below)
+- Building an agent that needs easy access to Alchemy's developer platform? → **Path B** (see "Agentic Gateway Quick Start" below)
 
 Both paths access the same underlying APIs — the same methods, parameters, and response formats apply.
 
@@ -60,7 +60,7 @@ Both paths access the same underlying APIs — the same methods, parameters, and
 
 ## Path B: Agentic Gateway (x402)
 
-The Agentic Gateway lets agents call Alchemy APIs and pay per-request with USDC via the x402 protocol — no API key needed.
+The Agentic Gateway lets agents easily access Alchemy's developer platform — no API key needed. It uses SIWE authentication and x402 USDC payments.
 
 ### Gateway Base URLs
 | Product | Gateway URL | Notes |

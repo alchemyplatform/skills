@@ -1,6 +1,6 @@
 # Alchemy Skill
 
-Root Agent Skill for integrating [Alchemy](https://www.alchemy.com/) APIs into AI-powered applications. Supports both traditional API key access and the Agentic Gateway (x402 USDC payments).
+Root Agent Skill for integrating [Alchemy](https://www.alchemy.com/) APIs into AI-powered applications. Supports both traditional API key access and the Agentic Gateway for easy agent access to Alchemy's developer platform.
 
 ## Repository Structure
 

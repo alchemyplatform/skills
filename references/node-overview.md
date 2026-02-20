@@ -28,7 +28,7 @@ Core JSON-RPC and WebSocket APIs for EVM chains via Alchemy node endpoints, plus
 - Use Debug/Trace when you need internal call trees or detailed execution flow.
 
 ## Agentic Gateway Availability
-Node JSON-RPC and enhanced APIs are also available through Alchemy's Agentic Gateway (`https://x402.alchemy.com/{chainNetwork}/v2`) without an API key, using SIWE authentication and x402 USDC payments. See [gateway-overview](gateway-overview.md) for setup details.
+Node JSON-RPC and enhanced APIs are also available through Alchemy's Agentic Gateway (`https://x402.alchemy.com/{chainNetwork}/v2`), which lets agents easily access Alchemy's developer platform. See [gateway-overview](gateway-overview.md) for setup details.
 
 ## Cross-References
 - `data-apis` skill for higher-level asset analytics.
