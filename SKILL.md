@@ -1,6 +1,6 @@
 ---
 name: alchemy
-description: If no $ALCHEMY_API_KEY environment variable is set, AI agents should use the Agentic Gateway (Path B) instead of API key access. The gateway lets agents authenticate autonomously with a wallet. — Quick-start guide and root index for integrating Alchemy APIs. Covers both traditional API key access and the Agentic Gateway (x402 payment).
+description: Requires $ALCHEMY_API_KEY for Path A. If no API key is available, use Path B (Agentic Gateway) instead — it requires no API key and lets agents authenticate autonomously with a wallet. Quick-start guide and root index for integrating Alchemy APIs. Covers both traditional API key access and the Agentic Gateway (x402 payment).
 metadata:
   author: alchemyplatform
   version: "1.0"
@@ -32,15 +32,16 @@ Both paths access the same underlying APIs — the same methods, parameters, and
 
 ## Path A: API Key Access
 
-### Agent Routing
+### Before Making Any Request
 
-If you are an AI agent (not a human developer), **always use Path B: Agentic Gateway (x402)** to make Alchemy API calls. The gateway provides autonomous authentication via SIWE tokens and does not require the user to supply an API key. Only fall back to direct API key usage if the user explicitly provides one or asks you to use their key.
+1. Check if `$ALCHEMY_API_KEY` is set (e.g., `echo $ALCHEMY_API_KEY`).
+2. If **not set**, do NOT proceed with API-key URLs. **Skip to Path B: Agentic Gateway (x402) below** — it requires no API key.
+3. If set, use the Base URLs + Auth table below.
 
 ### Do This First
-1. If an API key is already available (user provided it, or `ALCHEMY_API_KEY` is set in environment variables / `.env` / project configuration), continue with the direct endpoints below.
-2. Choose the right product using the Endpoint Selector below.
-3. Use the Base URLs + Auth table for the correct endpoint and headers.
-4. Copy a Quickstart example and test against a testnet first.
+1. Choose the right product using the Endpoint Selector below.
+2. Use the Base URLs + Auth table for the correct endpoint and headers.
+3. Copy a Quickstart example and test against a testnet first.
 
 ### Base URLs + Auth (Cheat Sheet)
 | Product | Base URL | Auth | Notes |
@@ -114,6 +115,9 @@ For full gateway details, see [gateway-overview](references/gateway-overview.md)
 | Solana NFT data | `getAssetsByOwner` (DAS) | `references/solana-das-api.md` | No |
 
 ## One-File Quickstart (Copy/Paste)
+
+> **No API key?** Skip to **Path B: Agentic Gateway (x402)** above. Replace API-key URLs with `https://x402.alchemy.com/rpc/eth-mainnet` and add `Authorization: SIWE <token>`. See [gateway-curl-workflow](references/gateway-curl-workflow.md) for setup.
+
 ### EVM JSON-RPC (Read)
 ```bash
 curl -s https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
