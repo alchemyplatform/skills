@@ -10,9 +10,14 @@ A lightweight way to make blockchain RPC calls using curl and short scripts, wit
 
 For SDK-based workflows with automatic payment handling, see [gateway-making-requests](gateway-making-requests.md) instead.
 
+## Step 0: Ensure Wallet Exists
+
+If `wallet.json` does not exist, run the [gateway-wallet-bootstrap](gateway-wallet-bootstrap.md) flow first.
+If `siwe-token.txt` does not exist or the token is expired, run Step 1 below.
+Then proceed directly to Step 2 to make the RPC call.
+
 ## Prerequisites
 
-- A `wallet.json` file exists (see [gateway-wallet-bootstrap](gateway-wallet-bootstrap.md) if not)
 - `npx tsx` is available (comes with Node.js)
 - `siwe-token.txt` is in `.gitignore` (add it if not)
 

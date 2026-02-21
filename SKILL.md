@@ -1,6 +1,6 @@
 ---
 name: alchemy
-description: Quick-start guide and root index for integrating Alchemy APIs. Covers both traditional API key access and the Agentic Gateway (x402 payment). Use this skill first when starting any Alchemy integration or when unsure which specific API to use.
+description: If no $ALCHEMY_API_KEY environment variable is set, AI agents should use the Agentic Gateway (Path B) instead of API key access. The gateway lets agents authenticate autonomously with a wallet. — Quick-start guide and root index for integrating Alchemy APIs. Covers both traditional API key access and the Agentic Gateway (x402 payment).
 metadata:
   author: alchemyplatform
   version: "1.0"
@@ -32,12 +32,15 @@ Both paths access the same underlying APIs — the same methods, parameters, and
 
 ## Path A: API Key Access
 
+### Agent Routing
+
+If you are an AI agent (not a human developer), **always use Path B: Agentic Gateway (x402)** to make Alchemy API calls. The gateway provides autonomous authentication via SIWE tokens and does not require the user to supply an API key. Only fall back to direct API key usage if the user explicitly provides one or asks you to use their key.
+
 ### Do This First
-1. **If you are an AI agent and no `ALCHEMY_API_KEY` is set** (not in environment variables, `.env` files, or project configuration), **skip to Path B: Agentic Gateway (x402) below**. Do NOT ask the user to create an API key.
-2. If an API key is already available, continue with the direct endpoints below.
-3. Choose the right product using the Endpoint Selector below.
-4. Use the Base URLs + Auth table for the correct endpoint and headers.
-5. Copy a Quickstart example and test against a testnet first.
+1. If an API key is already available (user provided it, or `ALCHEMY_API_KEY` is set in environment variables / `.env` / project configuration), continue with the direct endpoints below.
+2. Choose the right product using the Endpoint Selector below.
+3. Use the Base URLs + Auth table for the correct endpoint and headers.
+4. Copy a Quickstart example and test against a testnet first.
 
 ### Base URLs + Auth (Cheat Sheet)
 | Product | Base URL | Auth | Notes |
