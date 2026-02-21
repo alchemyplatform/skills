@@ -33,19 +33,11 @@ Both paths access the same underlying APIs — the same methods, parameters, and
 ## Path A: API Key Access
 
 ### Do This First
-1. Check for an Alchemy API key: look for `ALCHEMY_API_KEY` in environment variables, `.env` files, or project configuration. If the user has provided one, use it. **If no API key is found, follow the "Missing API Key" steps below before continuing.**
-2. Choose the right product using the Endpoint Selector below.
-3. Use the Base URLs + Auth table for the correct endpoint and headers.
-4. Copy a Quickstart example and test against a testnet first.
-
-### Missing API Key
-
-If no Alchemy API key is available, **do not proceed with placeholder values or skip authentication**. Instead, inform the user and present these two options:
-
-1. **Get a free API key** — Create one at https://dashboard.alchemy.com/ (free tier available). Best for traditional server apps and dApps.
-2. **Use the Agentic Gateway** — No API key needed. Access the same Alchemy APIs and pay per-request with USDC from a crypto wallet ($0.01/request). See **Path B: Agentic Gateway (x402)** below for setup.
-
-Ask the user which option they prefer before proceeding. If they choose the Agentic Gateway, skip to Path B.
+1. **If you are an AI agent and no `ALCHEMY_API_KEY` is set** (not in environment variables, `.env` files, or project configuration), **skip to Path B: Agentic Gateway (x402) below**. Do NOT ask the user to create an API key.
+2. If an API key is already available, continue with the direct endpoints below.
+3. Choose the right product using the Endpoint Selector below.
+4. Use the Base URLs + Auth table for the correct endpoint and headers.
+5. Copy a Quickstart example and test against a testnet first.
 
 ### Base URLs + Auth (Cheat Sheet)
 | Product | Base URL | Auth | Notes |
