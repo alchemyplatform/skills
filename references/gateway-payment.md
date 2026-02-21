@@ -73,7 +73,7 @@ const retryResponse = await fetch("https://x402.alchemy.com/eth-mainnet/v2", {
 
 - **Asset**: USDC (6 decimals)
 - **Scheme**: `exact` — uses EIP-3009 gasless `transferWithAuthorization`
-- **Amount**: `10000` atomic units = $0.01 USD
+- **Amount**: Specified in the 402 response `accepts` array (USDC atomic units, 6 decimals)
 - **Signing**: The `@x402/evm` package signs an EIP-712 typed message authorizing the USDC transfer. No on-chain gas is needed from the payer.
 - **Settlement**: The gateway's facilitator (Coinbase CDP) submits the signed authorization on-chain.
 

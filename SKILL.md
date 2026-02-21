@@ -18,7 +18,7 @@ Alchemy APIs can be accessed through two paths:
 |---|---|---|
 | **Best for** | Server apps, dApps, any project with an API key | Agents that need easy access to Alchemy's developer platform |
 | **Auth** | API key in URL or header | SIWE token (`Authorization: SIWE <token>`) |
-| **Payment** | Alchemy plan (free tier available) | x402 USDC micropayment ($0.01/request) |
+| **Payment** | Alchemy plan (free tier available) | x402 USDC per-request payment |
 | **Setup** | Create key at dashboard.alchemy.com | Generate wallet + fund with USDC |
 | **Base URL** | `https://<network>.g.alchemy.com/v2/$API_KEY` | `https://x402.alchemy.com/{chainNetwork}/v2` |
 
