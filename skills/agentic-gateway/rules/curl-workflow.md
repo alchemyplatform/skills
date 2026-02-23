@@ -12,7 +12,7 @@ For SDK-based workflows with automatic payment handling, see [making-requests](m
 
 ## Step 0: Ensure Wallet Exists
 
-If `wallet.json` does not exist, run the [wallet-bootstrap](wallet-bootstrap.md) flow first.
+If no wallet is set up yet (no `wallet.json` or private key available), run the [wallet-bootstrap](wallet-bootstrap.md) flow first.
 If `siwe-token.txt` does not exist or the token is expired, run Step 1 below.
 Then proceed directly to Step 2 to make the RPC call.
 

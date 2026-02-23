@@ -21,8 +21,8 @@ See [reference](reference.md) for all endpoints, supported chains, and available
 
 ## End-to-End Flow
 
-1. **Create a wallet** — Generate an Ethereum private key (or use an existing one).
-2. **Fund the wallet** — Load USDC on a supported payment network (Base Mainnet, Ethereum Mainnet, or Base Sepolia for testnet).
+1. **Set up a wallet** — Use an existing Ethereum wallet or generate a new private key.
+2. **Fund the wallet** — Load USDC on a supported payment network (Base Mainnet or Base Sepolia for testnet).
 3. **Create a SIWE token** — Sign a SIWE message with your private key. This proves wallet ownership.
 4. **Send a request** — Call any gateway route with the `Authorization: SIWE <token>` header. For quick queries without an npm project, see the [curl-workflow](curl-workflow.md) for a lightweight curl-based alternative.
 5. **Handle 402 Payment Required** — If the gateway returns 402, create an x402 payment from the response and retry with a `Payment-Signature` header.

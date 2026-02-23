@@ -67,7 +67,6 @@ Payments are made on these networks (independent of which chain you're querying)
 |---------|-----------|--------------|---------------------|
 | Base Sepolia (testnet) | `eip155:84532` | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | `USDC` |
 | Base Mainnet | `eip155:8453` | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | `USD Coin` |
-| Ethereum Mainnet | `eip155:1` | `0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48` | `USD Coin` |
 
 **Gateway receiving wallet**: `0x658dc531A7FE637F7BA31C3dDd4C9bf8A27c81e5`
 

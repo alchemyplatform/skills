@@ -36,7 +36,7 @@ A skill that lets agents easily access Alchemy's developer platform. The gateway
 
 ## Quick Start
 
-1. **Create a wallet** — Generate an Ethereum private key (see [wallet-bootstrap](rules/wallet-bootstrap.md))
+1. **Set up a wallet** — Use an existing wallet or generate a new one (see [wallet-bootstrap](rules/wallet-bootstrap.md))
 2. **Fund with USDC** — Load USDC on Base Mainnet (or Base Sepolia for testnet)
 3. **Create a SIWE token** — Sign a SIWE message to prove wallet ownership (see [authentication](rules/authentication.md))
 4. **Send requests** — Use `Authorization: SIWE <token>` header. For SDK auto-payment, see [making-requests](rules/making-requests.md). For quick curl queries, see [curl-workflow](rules/curl-workflow.md).
@@ -46,7 +46,7 @@ A skill that lets agents easily access Alchemy's developer platform. The gateway
 
 | Rule | Description |
 |------|-------------|
-| [wallet-bootstrap](rules/wallet-bootstrap.md) | Create a wallet and fund it with testnet USDC (use if no `wallet.json` exists) |
+| [wallet-bootstrap](rules/wallet-bootstrap.md) | Set up a wallet (existing or new) and fund it with USDC |
 | [overview](rules/overview.md) | What the gateway is, end-to-end flow, required packages |
 | [authentication](rules/authentication.md) | SIWE token creation and SIWE message signing |
 | [making-requests](rules/making-requests.md) | Sending JSON-RPC requests with `@x402/fetch` or `@x402/axios` |
