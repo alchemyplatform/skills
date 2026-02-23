@@ -26,12 +26,12 @@ Get current prices by token symbol.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `symbols` | string (query) | Yes | Comma-separated token symbols (max 25). Example: `symbols=ETH,BTC,USDC` |
+| `symbols` | string (query, repeated) | Yes | One `symbols` param per token (max 25). Example: `?symbols=ETH&symbols=BTC&symbols=USDC` |
 
 ### Request
 
 ```bash
-curl -s "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-symbol?symbols=ETH,BTC"
+curl -s "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-symbol?symbols=ETH&symbols=BTC"
 ```
 
 ### Response

@@ -26,7 +26,7 @@ Fetch current prices and historical price series for tokens.
 
 ## Example (Current)
 ```bash
-curl -s "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-symbol?symbols=ETH,BTC"
+curl -s "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-symbol?symbols=ETH&symbols=BTC"
 ```
 
 ## Example (Historical)
