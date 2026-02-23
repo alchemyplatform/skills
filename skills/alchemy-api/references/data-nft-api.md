@@ -84,6 +84,12 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getNFTsForOwn
         "size": 123456,
         "originalUrl": "ipfs://..."
       },
+      "animation": {
+        "cachedUrl": null,
+        "contentType": null,
+        "size": null,
+        "originalUrl": null
+      },
       "raw": {
         "tokenUri": "ipfs://Qm.../1234",
         "metadata": { "name": "Bored Ape #1234", "image": "ipfs://...", "attributes": [] },
@@ -95,6 +101,13 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getNFTsForOwn
         "externalUrl": "https://boredapeyachtclub.com",
         "bannerImageUrl": "https://..."
       },
+      "mint": {
+        "mintAddress": null,
+        "blockNumber": null,
+        "timestamp": null,
+        "transactionHash": null
+      },
+      "owners": null,
       "timeLastUpdated": "2025-06-01T12:00:00.000Z",
       "balance": "1",
       "acquiredAt": {
@@ -130,8 +143,11 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getNFTsForOwn
 | `ownedNfts[].description` | string | NFT description |
 | `ownedNfts[].tokenUri` | string | Resolved token URI |
 | `ownedNfts[].image` | object | Image URLs (cachedUrl, thumbnailUrl, pngUrl, originalUrl) |
+| `ownedNfts[].animation` | object | Animation URLs (cachedUrl, contentType, size, originalUrl) |
 | `ownedNfts[].raw.metadata` | object | Raw metadata JSON |
 | `ownedNfts[].collection` | object | Collection info (name, slug, externalUrl) |
+| `ownedNfts[].mint` | object | Minting info (mintAddress, blockNumber, timestamp, transactionHash) |
+| `ownedNfts[].owners` | array | Current owners (may be null) |
 | `ownedNfts[].balance` | string | Token balance (always `"1"` for ERC-721) |
 | `ownedNfts[].acquiredAt` | object | Acquisition timestamp and block number |
 | `totalCount` | integer | Total NFTs owned (across all pages) |
@@ -184,6 +200,12 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getNFTMetadat
     "contentType": "image/png",
     "originalUrl": "ipfs://..."
   },
+  "animation": {
+    "cachedUrl": null,
+    "contentType": null,
+    "size": null,
+    "originalUrl": null
+  },
   "raw": {
     "tokenUri": "ipfs://QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/1",
     "metadata": {
@@ -196,6 +218,13 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getNFTMetadat
     }
   },
   "collection": { "name": "Bored Ape Yacht Club", "slug": "boredapeyachtclub" },
+  "mint": {
+    "mintAddress": null,
+    "blockNumber": null,
+    "timestamp": null,
+    "transactionHash": null
+  },
+  "owners": ["0x46efbaedc92067e6d60e84ed6395099723252496"],
   "timeLastUpdated": "2025-06-01T12:00:00.000Z"
 }
 ```
@@ -214,6 +243,9 @@ Same structure as a single item in `getNFTsForOwner.ownedNfts[]`. Key fields:
 | `image` | object | Image URLs and content type |
 | `raw.metadata` | object | Raw metadata JSON including attributes array |
 | `collection` | object | Collection info |
+| `animation` | object | Animation URLs (cachedUrl, contentType, size, originalUrl) |
+| `mint` | object | Minting info (mintAddress, blockNumber, timestamp, transactionHash) |
+| `owners` | array | Current owners (may be null) |
 | `timeLastUpdated` | string | ISO 8601 timestamp of last metadata update |
 
 ---
@@ -256,9 +288,7 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getContractMe
     "discordUrl": "https://discord.gg/...",
     "bannerImageUrl": "https://...",
     "floorPrice": 10.5
-  },
-  "isSpam": false,
-  "spamClassifications": []
+  }
 }
 ```
 
@@ -275,7 +305,8 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getContractMe
 | `deployedBlockNumber` | integer | Block number of deployment |
 | `openSeaMetadata` | object | OpenSea collection data |
 | `openSeaMetadata.floorPrice` | number | Floor price in ETH |
-| `isSpam` | boolean | Whether flagged as spam |
+
+> **Note**: `isSpam` and `spamClassifications` fields are available in the contract object embedded within `getNFTsForOwner`, `getNFTMetadata`, and `getNFTsForContract` responses, but are not returned by this standalone endpoint.
 
 ---
 
@@ -348,7 +379,8 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getOwnersForN
 
 ```json
 {
-  "owners": ["0xd8da6bf26964af9d7eed9e03e53415d37aa96045"]
+  "owners": ["0xd8da6bf26964af9d7eed9e03e53415d37aa96045"],
+  "pageKey": null
 }
 ```
 
@@ -380,15 +412,31 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getNFTsForCon
 {
   "nfts": [
     {
-      "contract": { "address": "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d" },
+      "contract": {
+        "address": "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+        "name": "BoredApeYachtClub",
+        "symbol": "BAYC",
+        "totalSupply": "10000",
+        "tokenType": "ERC721",
+        "openSeaMetadata": { "collectionName": "Bored Ape Yacht Club", "floorPrice": 6.14 },
+        "isSpam": null,
+        "spamClassifications": []
+      },
       "tokenId": "0",
       "tokenType": "ERC721",
-      "name": "Bored Ape #0",
+      "name": null,
+      "description": null,
+      "tokenUri": "https://ipfs.io/ipfs/QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/0",
       "image": { "cachedUrl": "https://nft-cdn.alchemy.com/..." },
-      "raw": { "metadata": { "attributes": [] } }
+      "animation": { "cachedUrl": null, "contentType": null, "size": null, "originalUrl": null },
+      "raw": { "metadata": { "image": "ipfs://...", "attributes": [...] }, "error": null },
+      "collection": { "name": "Bored Ape Yacht Club", "slug": "boredapeyachtclub" },
+      "mint": { "mintAddress": null, "blockNumber": null, "timestamp": null, "transactionHash": null },
+      "owners": null,
+      "timeLastUpdated": "2025-06-01T12:00:00.000Z"
     }
   ],
-  "pageKey": "2"
+  "pageKey": "0x0000000000000000000000000000000000000000000000000000000000000001"
 }
 ```
 

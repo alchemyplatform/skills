@@ -113,11 +113,10 @@ Simulates a transaction and returns detailed execution traces (call traces, logs
 
 ### Parameters
 
-Ordered parameters: `format`, `transaction`, `blockTag`.
+Ordered parameters: `transaction`, `blockTag`.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `format` | string | No | `"NESTED"` | `"NESTED"` (tree structure) or `"FLAT"` (flat array) |
 | `transaction` | object | Yes | — | Same transaction object as `simulateAssetChanges` |
 | `blockTag` | string | No | `"latest"` | `"latest"`, `"safe"`, `"finalized"`, `"earliest"`, or hex block number |
 
@@ -132,7 +131,6 @@ curl -s -X POST https://x402.alchemy.com/eth-mainnet/v2 \
     "id": 1,
     "method": "alchemy_simulateExecution",
     "params": [
-      "FLAT",
       {
         "from": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
         "to": "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -204,7 +202,7 @@ curl -s -X POST https://x402.alchemy.com/eth-mainnet/v2 \
 | `calls[].gasUsed` | string | Gas consumed (hex) |
 | `calls[].input` | string | Input calldata (hex) |
 | `calls[].output` | string | Return data (hex) |
-| `calls[].decoded` | object | ABI-decoded method name, inputs, and outputs |
+| `calls[].decoded` | object | ABI-decoded method name, inputs, outputs, and authority (e.g., `"ETHERSCAN"`) |
 | `calls[].calls` | array | Nested sub-calls (only in `NESTED` format) |
 | `logs` | array | Event logs emitted |
 | `logs[].address` | string | Emitting contract |
@@ -270,7 +268,7 @@ Simulates a bundle of transactions and returns execution traces for each.
 
 ### Parameters
 
-Ordered parameters: `format`, `transactions`, `blockTag`. Same as `simulateExecution` but with a transactions array. **Max 3 transactions per bundle.**
+Ordered parameters: `transactions`, `blockTag`. Same as `simulateExecution` but with a transactions array. **Max 3 transactions per bundle.**
 
 ### Request
 
@@ -283,7 +281,6 @@ curl -s -X POST https://x402.alchemy.com/eth-mainnet/v2 \
     "id": 1,
     "method": "alchemy_simulateExecutionBundle",
     "params": [
-      "FLAT",
       [
         { "from": "0xd8dA...", "to": "0xA0b8...", "data": "0x095ea7b3..." },
         { "from": "0xd8dA...", "to": "0xdef1...", "data": "0xd9627aa4..." }

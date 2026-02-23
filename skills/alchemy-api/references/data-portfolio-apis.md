@@ -62,13 +62,13 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/token
       {
         "network": "eth-mainnet",
         "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-        "tokenAddress": "native",
-        "tokenBalance": "1.234567890000000000",
+        "tokenAddress": null,
+        "tokenBalance": "0x000000000000000000000000000000000000000000000001bdd951817729c4f9",
         "tokenMetadata": {
-          "name": "Ethereum",
-          "symbol": "ETH",
-          "decimals": 18,
-          "logo": "https://..."
+          "symbol": null,
+          "decimals": null,
+          "name": null,
+          "logo": null
         },
         "tokenPrices": [
           {
@@ -82,7 +82,7 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/token
         "network": "eth-mainnet",
         "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
         "tokenAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "tokenBalance": "1000.000000",
+        "tokenBalance": "0x000000000000000000000000000000000000000000000000000000003b9aca00",
         "tokenMetadata": {
           "name": "USD Coin",
           "symbol": "USDC",
@@ -110,8 +110,8 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/token
 | `data.tokens` | array | Token objects |
 | `data.tokens[].network` | string | Network slug |
 | `data.tokens[].address` | string | Wallet address |
-| `data.tokens[].tokenAddress` | string | Token contract address (`"native"` for native token) |
-| `data.tokens[].tokenBalance` | string | Human-readable balance (decimal-adjusted) |
+| `data.tokens[].tokenAddress` | string | Token contract address (`null` for native token) |
+| `data.tokens[].tokenBalance` | string | Raw balance (hex, use token decimals to convert) |
 | `data.tokens[].tokenMetadata` | object | Token name, symbol, decimals, logo |
 | `data.tokens[].tokenPrices` | array | Price entries per currency (each has currency, value, lastUpdatedAt) |
 | `data.pageKey` | string | Pagination cursor (null if no more results) |
@@ -155,7 +155,7 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/token
       {
         "network": "eth-mainnet",
         "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-        "tokenAddress": "native",
+        "tokenAddress": null,
         "tokenBalance": "0x112210f47de98000"
       },
       {
@@ -176,7 +176,7 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/token
 |-------|------|-------------|
 | `data.tokens[].network` | string | Network slug |
 | `data.tokens[].address` | string | Wallet address |
-| `data.tokens[].tokenAddress` | string | Token contract address or `"native"` |
+| `data.tokens[].tokenAddress` | string | Token contract address (`null` for native token) |
 | `data.tokens[].tokenBalance` | string | Raw balance (hex) |
 | `data.pageKey` | string | Pagination cursor |
 
@@ -318,7 +318,20 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/nfts/
             "collectionName": "Bored Ape Yacht Club",
             "floorPrice": 10.5
           },
-          "isSpam": false
+          "isSpam": false,
+          "totalBalance": "1",
+          "numDistinctTokensOwned": "1",
+          "displayNft": {
+            "tokenId": "1234",
+            "name": "Bored Ape #1234"
+          },
+          "image": {
+            "cachedUrl": "https://nft-cdn.alchemy.com/...",
+            "thumbnailUrl": "https://nft-cdn.alchemy.com/...",
+            "pngUrl": "https://nft-cdn.alchemy.com/...",
+            "contentType": "image/png",
+            "originalUrl": "ipfs://..."
+          }
         }
       }
     ],
@@ -336,6 +349,10 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/nfts/
 | `data.contracts[].network` | string | Network slug |
 | `data.contracts[].address` | string | Wallet address |
 | `data.contracts[].contract` | object | Contract info (same as NFT API `getContractMetadata`) |
+| `data.contracts[].contract.totalBalance` | string | Total NFTs owned from this contract |
+| `data.contracts[].contract.numDistinctTokensOwned` | string | Number of distinct token IDs owned |
+| `data.contracts[].contract.displayNft` | object | Representative NFT (tokenId, name) |
+| `data.contracts[].contract.image` | object | Image URLs for the display NFT |
 | `data.totalCount` | integer | Total collections |
 | `data.pageKey` | string | Pagination cursor |
 

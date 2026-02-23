@@ -43,15 +43,13 @@ curl -s "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-symbol?s
       "symbol": "ETH",
       "prices": [
         { "currency": "usd", "value": "1970.69", "lastUpdatedAt": "2025-06-01T12:00:00Z" }
-      ],
-      "error": null
+      ]
     },
     {
       "symbol": "BTC",
       "prices": [
         { "currency": "usd", "value": "67727.36", "lastUpdatedAt": "2025-06-01T12:00:00Z" }
-      ],
-      "error": null
+      ]
     }
   ]
 }
@@ -67,7 +65,7 @@ curl -s "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-symbol?s
 | `data[].prices[].currency` | string | Currency code (e.g., `"usd"`) |
 | `data[].prices[].value` | string | Price as decimal string |
 | `data[].prices[].lastUpdatedAt` | string | ISO 8601 timestamp |
-| `data[].error` | object | Error details if symbol not found (null on success) |
+| `data[].error` | object | Error details if symbol not found (omitted on success) |
 
 > **Note**: This endpoint does not return market cap, 24h volume, or
 > percent change. To get market data, use `POST /tokens/historical`
@@ -110,16 +108,14 @@ curl -s -X POST "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-
       "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
       "prices": [
         { "currency": "usd", "value": "0.9998", "lastUpdatedAt": "2025-06-01T12:00:00Z" }
-      ],
-      "error": null
+      ]
     },
     {
       "network": "eth-mainnet",
       "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
       "prices": [
         { "currency": "usd", "value": "1.0001", "lastUpdatedAt": "2025-06-01T12:00:00Z" }
-      ],
-      "error": null
+      ]
     }
   ]
 }
