@@ -8,94 +8,62 @@ tags:
   - evm
   - rpc
 related:
-  - data-apis
-  - recipes
-updated: 2026-02-05
+  - data-token-api.md
+  - data-transfers-api.md
+  - data-simulation-api.md
+updated: 2026-02-23
 ---
 # Enhanced APIs (Alchemy RPC Extensions)
 
-## Summary
-Alchemy provides enhanced JSON-RPC methods (prefixed with `alchemy_`) that offer indexed, higher-level data without manual log scanning.
+Alchemy-specific JSON-RPC methods (`alchemy_*` prefix) that provide indexed, higher-level data. These are documented in detail in their dedicated reference files.
 
-## Primary Use Cases
-- Wallet token balances and metadata.
-- Transfer history for wallets/contracts.
-- NFT ownership and metadata queries.
+**Base URL**: `https://<network>.g.alchemy.com/v2/$ALCHEMY_API_KEY`
 
-## When To Use / Not Use
-- Use when you need asset analytics or history quickly.
-- Avoid when strict canonical data is required and you can afford raw RPC queries.
+---
 
-## Auth & Setup
-- Same JSON-RPC endpoint as standard node API: `https://<network>.g.alchemy.com/v2/$ALCHEMY_API_KEY`
+## Method Index
 
-## Endpoints / Methods
-Common methods (subset; verify per-chain support):
-- `alchemy_getTokenBalances`
-- `alchemy_getTokenMetadata`
-- `alchemy_getAssetTransfers`
-- `alchemy_getTokenAllowance`
-- `alchemy_getNFTs`
-- `alchemy_getNFTMetadata`
-- `alchemy_getNFTsForCollection`
-- `alchemy_getOwnersForCollection`
+For detailed parameters, request/response examples, and response schemas, see the dedicated reference files:
 
-## Parameters
-- Most methods accept an address plus optional filters (contract addresses, categories, block range).
-- Pagination is commonly supported via `pageKey`.
+| Method | Description | Reference |
+|--------|-------------|-----------|
+| `alchemy_getTokenBalances` | ERC-20 token balances for an address | [data-token-api.md](data-token-api.md) |
+| `alchemy_getTokenMetadata` | Token name, symbol, decimals, logo | [data-token-api.md](data-token-api.md) |
+| `alchemy_getTokenAllowance` | Spender allowance for a token | [data-token-api.md](data-token-api.md) |
+| `alchemy_getAssetTransfers` | Historical transfer history | [data-transfers-api.md](data-transfers-api.md) |
+| `alchemy_simulateAssetChanges` | Simulate transaction asset changes | [data-simulation-api.md](data-simulation-api.md) |
+| `alchemy_simulateExecution` | Simulate with execution traces | [data-simulation-api.md](data-simulation-api.md) |
+| `alchemy_simulateAssetChangesBundle` | Simulate bundle asset changes | [data-simulation-api.md](data-simulation-api.md) |
+| `alchemy_simulateExecutionBundle` | Simulate bundle with traces | [data-simulation-api.md](data-simulation-api.md) |
+| `alchemy_getTransactionReceipts` | Bulk receipts for a block | [node-utility-api.md](node-utility-api.md) |
 
-## Example Requests
+---
+
+## Quick Example
+
 ```bash
-curl -s https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+curl -s -X POST https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
   -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"alchemy_getTokenBalances","params":["0x00000000219ab540356cbb839cbe05303d7705fa"]}'
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "alchemy_getTokenBalances",
+    "params": ["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", "erc20"]
+  }'
 ```
 
-```ts
-const url = `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`;
-const body = {
-  jsonrpc: "2.0",
-  id: 1,
-  method: "alchemy_getAssetTransfers",
-  params: [{
-    fromBlock: "0x0",
-    toBlock: "latest",
-    category: ["erc20"],
-    toAddress: "0x00000000219ab540356cbb839cbe05303d7705fa",
-    withMetadata: true,
-    maxCount: "0x3e8",
-  }],
-};
+---
 
-const res = await fetch(url, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(body),
-});
-const json = await res.json();
-```
+## Notes
 
-## Error Handling
-- Handle JSON-RPC errors, and pagination limits via `pageKey`.
-
-## Performance / Limits / Compute Units
-- Enhanced APIs are efficient but still compute-unit metered.
-- Prefer filters over large ranges where possible.
-
-## Gotchas & Edge Cases
-- Availability varies by network.
-- NFT APIs may exclude spam NFTs unless configured.
-
-## Testing / Mocking
-- Snapshot responses and use fixed block ranges.
+- All enhanced methods use the same JSON-RPC endpoint as standard node API.
+- Enhanced APIs are efficient but compute-unit metered. Prefer filters over large ranges.
+- Availability varies by network. Check per-chain support.
 
 ## Agentic Gateway
-These enhanced APIs (Token API, Transfers API) are also available via `https://x402.alchemy.com/{chainNetwork}/v2` without an API key.
-See the `agentic-gateway` skill for SIWE authentication and x402 payment setup.
 
-## Related Files
-- `data-overview.md`
-- `recipes-overview.md`
+These enhanced APIs are also available via `https://x402.alchemy.com/{chainNetwork}/v2` without an API key.
+See the `agentic-gateway` skill for SIWE authentication and x402 payment setup.
 
 ## Official Docs
 - [Enhanced APIs Overview](https://www.alchemy.com/docs/reference/enhanced-apis-overview)

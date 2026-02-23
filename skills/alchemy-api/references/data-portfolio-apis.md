@@ -11,133 +11,430 @@ related:
   - data-nft-api.md
   - data-transfers-api.md
   - recipes-get-portfolio.md
-updated: 2026-02-05
+updated: 2026-02-23
 ---
 # Portfolio APIs
 
-## Summary
-Portfolio APIs provide consolidated wallet views (tokens, NFTs, and transaction history) across multiple networks in single requests.
+Consolidated wallet views (tokens, NFTs, transaction history) across multiple networks in single requests. All endpoints are `POST` with JSON bodies.
 
-## Primary Use Cases
-- Build a full wallet portfolio page.
-- Multi-chain wallet views without parallel RPC calls.
-- Portfolio feeds and wallet analytics.
+**Base URL**: `https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY`
 
-## When To Use / Not Use
-- Use when you want multi-chain asset views in one request.
-- Avoid if you only need a single token balance or metadata field; Token API may be cheaper.
+**Supported chains** (in `networks` array): `eth-mainnet`, `base-mainnet`, `polygon-mainnet`, `arb-mainnet`, `opt-mainnet`, `sol-mainnet`, and more.
 
-## Auth & Setup
-- Base URL: `https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY`
-- All endpoints below are `POST` with JSON bodies.
+---
 
-## Network Selection (EVM + Solana)
-- Each request includes `addresses` entries shaped like `{ address, networks }`.
-- `networks` is an array of network enums like `eth-mainnet`, `polygon-mainnet`, `base-mainnet`, `arb-mainnet`, `opt-mainnet`, `sol-mainnet`.
+## `POST /assets/tokens/by-address`
 
-## Endpoints / Methods
-### Token Balances By Wallet
-- `POST /assets/tokens/balances/by-address`
-- Request fields:
-- `addresses` (required, limit 3 address/network pairs, max 20 networks total)
-- `includeNativeTokens` (optional, default `true`)
-- `includeErc20Tokens` (optional, default `true`)
-- `pageKey` (optional)
-- Response fields:
-- `data.tokens[]`: `network`, `address`, `tokenAddress`, `tokenBalance`
-- `data.pageKey`
+Returns fungible tokens (native + ERC-20 + SPL) with balances, prices, and metadata for one or more wallets across multiple networks.
 
-### NFTs By Wallet
-- `POST /assets/nfts/by-address`
-- Request fields:
-- `addresses` (required, limit 2 address/network pairs, max 15 networks each)
-- `withMetadata` (optional, default `true`)
-- `pageKey` (optional)
-- `pageSize` (optional, default `100`)
-- `orderBy` (optional, `transferTime`)
-- `sortOrder` (optional, `asc` or `desc`)
-- Response fields:
-- `data.ownedNfts[]`: `network`, `address`, `contract` (includes opensea metadata + spam flags), `tokenId`, `tokenType`, `name`, `description`, `image`, `raw`, `collection`, `tokenUri`, `timeLastUpdated`, `acquiredAt`
-- `data.totalCount`, `data.pageKey`
+### Parameters
 
-### NFT Collections By Wallet
-- `POST /assets/nfts/contracts/by-address`
-- Request fields:
-- `addresses` (required, limit 2 address/network pairs, max 15 networks each)
-- `withMetadata` (optional, default `true`)
-- `pageKey` (optional)
-- `pageSize` (optional, default `100`)
-- `orderBy` (optional, `transferTime`)
-- `sortOrder` (optional, `asc` or `desc`)
-- Response fields:
-- `data.contracts[]`: `network`, `address`, `contract` (includes name, symbol, tokenType, totalSupply, deploy info, opensea metadata, spam flags)
-- `data.totalCount`, `data.pageKey`
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `addresses` | array | Yes | — | Wallet/network pairs (max 2 addresses, max 5 networks each) |
+| `addresses[].address` | string | Yes | — | Wallet address |
+| `addresses[].networks` | string[] | Yes | — | Network slugs to query |
+| `withMetadata` | boolean | No | `true` | Include token metadata (name, symbol, decimals, logo) |
+| `withPrices` | boolean | No | `true` | Include token prices |
+| `includeNativeTokens` | boolean | No | `true` | Include native tokens (ETH, MATIC, etc.) |
+| `includeErc20Tokens` | boolean | No | `true` | Include ERC-20 tokens |
+| `pageKey` | string | No | — | Pagination cursor |
 
-### Transactions By Wallet (Beta)
-- `POST /transactions/history/by-address`
-- Request fields:
-- `addresses` (required, limit 1 address/network pair, max 2 networks; beta supports ETH and BASE mainnets only)
-- `before` (optional cursor)
-- `after` (optional cursor)
-- `limit` (optional, default `25`, max `50`)
-- `pageKey` (optional)
-- Response fields:
-- `transactions[]`: `network`, `hash`, `timeStamp`, `blockNumber`, `blockHash`, `nonce`, `transactionIndex`, `fromAddress`, `toAddress`, `contractAddress`, `value`, `cumulativeGasUsed`, `effectiveGasPrice`, `gasUsed`, `logs`, `internalTxns`
-- `before`, `after`, `totalCount`
+### Request
 
-## Example Requests
 ```bash
-curl -sX POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/tokens/balances/by-address" \
+curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/tokens/by-address" \
   -H "Content-Type: application/json" \
   -d '{
     "addresses": [{
-      "address": "0x00000000219ab540356cbb839cbe05303d7705fa",
-      "networks": ["eth-mainnet","base-mainnet","arb-mainnet","opt-mainnet","polygon-mainnet"]
+      "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+      "networks": ["eth-mainnet", "base-mainnet", "arb-mainnet"]
     }]
   }'
 ```
 
+### Response
+
+```json
+{
+  "data": {
+    "tokens": [
+      {
+        "network": "eth-mainnet",
+        "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+        "tokenAddress": "native",
+        "tokenBalance": "1.234567890000000000",
+        "tokenMetadata": {
+          "name": "Ethereum",
+          "symbol": "ETH",
+          "decimals": 18,
+          "logo": "https://..."
+        },
+        "tokenPrice": {
+          "currency": "usd",
+          "value": "1970.69",
+          "lastUpdatedAt": "2025-06-01T12:00:00Z"
+        }
+      },
+      {
+        "network": "eth-mainnet",
+        "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+        "tokenAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "tokenBalance": "1000.000000",
+        "tokenMetadata": {
+          "name": "USD Coin",
+          "symbol": "USDC",
+          "decimals": 6,
+          "logo": "https://..."
+        },
+        "tokenPrice": {
+          "currency": "usd",
+          "value": "0.9998",
+          "lastUpdatedAt": "2025-06-01T12:00:00Z"
+        }
+      }
+    ],
+    "pageKey": null
+  }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.tokens` | array | Token objects |
+| `data.tokens[].network` | string | Network slug |
+| `data.tokens[].address` | string | Wallet address |
+| `data.tokens[].tokenAddress` | string | Token contract address (`"native"` for native token) |
+| `data.tokens[].tokenBalance` | string | Human-readable balance (decimal-adjusted) |
+| `data.tokens[].tokenMetadata` | object | Token name, symbol, decimals, logo |
+| `data.tokens[].tokenPrice` | object | Current price (currency, value, lastUpdatedAt) |
+| `data.pageKey` | string | Pagination cursor (null if no more results) |
+
+---
+
+## `POST /assets/tokens/balances/by-address`
+
+Returns raw token balances (without prices/metadata). More efficient when you only need balances.
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `addresses` | array | Yes | — | Wallet/network pairs (max 3 pairs, max 20 networks total) |
+| `addresses[].address` | string | Yes | — | Wallet address |
+| `addresses[].networks` | string[] | Yes | — | Network slugs |
+| `includeNativeTokens` | boolean | No | `true` | Include native tokens |
+| `includeErc20Tokens` | boolean | No | `true` | Include ERC-20 tokens |
+| `pageKey` | string | No | — | Pagination cursor |
+
+### Request
+
 ```bash
-curl -sX POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/nfts/by-address" \
+curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/tokens/balances/by-address" \
   -H "Content-Type: application/json" \
   -d '{
     "addresses": [{
-      "address": "0x00000000219ab540356cbb839cbe05303d7705fa",
-      "networks": ["eth-mainnet"]
-    }],
-    "withMetadata": true,
-    "pageSize": 100
+      "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+      "networks": ["eth-mainnet", "base-mainnet", "arb-mainnet", "opt-mainnet", "polygon-mainnet"]
+    }]
   }'
 ```
 
-## Error Handling
-- Handle HTTP `429` with backoff.
-- Use `pageKey` for pagination.
+### Response
 
-## Performance / Limits / Compute Units
-- Use the smallest `networks` list you need.
-- Paginate large wallets.
+```json
+{
+  "data": {
+    "tokens": [
+      {
+        "network": "eth-mainnet",
+        "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+        "tokenAddress": "native",
+        "tokenBalance": "0x112210f47de98000"
+      },
+      {
+        "network": "eth-mainnet",
+        "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+        "tokenAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "tokenBalance": "0x3b9aca00"
+      }
+    ],
+    "pageKey": null
+  }
+}
+```
 
-## Gotchas & Edge Cases
-- NFT metadata can be missing or malformed; handle null fields.
-- Some networks may not be supported for specific endpoints.
+### Response Fields
 
-## Testing / Mocking
-- Use a small wallet address and a limited network list for deterministic tests.
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.tokens[].network` | string | Network slug |
+| `data.tokens[].address` | string | Wallet address |
+| `data.tokens[].tokenAddress` | string | Token contract address or `"native"` |
+| `data.tokens[].tokenBalance` | string | Raw balance (hex) |
+| `data.pageKey` | string | Pagination cursor |
+
+---
+
+## `POST /assets/nfts/by-address`
+
+Returns NFTs owned by a wallet across multiple networks.
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `addresses` | array | Yes | — | Wallet/network pairs (max 2 pairs, max 15 networks each) |
+| `addresses[].address` | string | Yes | — | Wallet address |
+| `addresses[].networks` | string[] | Yes | — | Network slugs |
+| `excludeFilters` | string[] | No | `["SPAM"]` | Exclude `"SPAM"`, `"AIRDROPS"` |
+| `includeFilters` | string[] | No | — | Include only `"SPAM"`, `"AIRDROPS"` (mutually exclusive with excludeFilters) |
+| `spamConfidenceLevel` | string | No | — | `"VERY_HIGH"`, `"HIGH"`, `"MEDIUM"`, `"LOW"` |
+| `withMetadata` | boolean | No | `true` | Include NFT metadata |
+| `pageKey` | string | No | — | Pagination cursor |
+| `pageSize` | integer | No | `100` | Results per page (max 100) |
+| `orderBy` | string | No | — | `"transferTime"` |
+| `sortOrder` | string | No | — | `"asc"` or `"desc"` |
+
+### Request
+
+```bash
+curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/nfts/by-address" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "addresses": [{
+      "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+      "networks": ["eth-mainnet"]
+    }],
+    "withMetadata": true,
+    "pageSize": 2
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "ownedNfts": [
+      {
+        "network": "eth-mainnet",
+        "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+        "contract": {
+          "address": "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+          "name": "BoredApeYachtClub",
+          "symbol": "BAYC",
+          "tokenType": "ERC721",
+          "openSeaMetadata": { "collectionName": "Bored Ape Yacht Club", "floorPrice": 10.5 },
+          "isSpam": false
+        },
+        "tokenId": "1234",
+        "tokenType": "ERC721",
+        "name": "Bored Ape #1234",
+        "description": "...",
+        "image": { "cachedUrl": "https://nft-cdn.alchemy.com/..." },
+        "collection": { "name": "Bored Ape Yacht Club" },
+        "acquiredAt": { "blockTimestamp": "2024-03-15T10:30:00.000Z" }
+      }
+    ],
+    "totalCount": 42,
+    "pageKey": "..."
+  }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.ownedNfts` | array | NFT objects (same structure as NFT API's `getNFTsForOwner` plus `network` and `address` fields) |
+| `data.ownedNfts[].network` | string | Network slug |
+| `data.ownedNfts[].address` | string | Wallet address |
+| `data.ownedNfts[].contract` | object | Contract info (address, name, symbol, tokenType, openSeaMetadata, isSpam) |
+| `data.ownedNfts[].tokenId` | string | Token ID |
+| `data.ownedNfts[].name` | string | NFT name |
+| `data.ownedNfts[].image` | object | Image URLs |
+| `data.ownedNfts[].acquiredAt` | object | Acquisition timestamp |
+| `data.totalCount` | integer | Total NFTs across all pages |
+| `data.pageKey` | string | Pagination cursor |
+
+---
+
+## `POST /assets/nfts/contracts/by-address`
+
+Returns NFT collections (contracts) owned by a wallet across multiple networks.
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `addresses` | array | Yes | — | Wallet/network pairs (max 2 pairs, max 15 networks each) |
+| `addresses[].address` | string | Yes | — | Wallet address |
+| `addresses[].networks` | string[] | Yes | — | Network slugs |
+| `withMetadata` | boolean | No | `true` | Include contract metadata |
+| `pageKey` | string | No | — | Pagination cursor |
+| `pageSize` | integer | No | `100` | Results per page (max 100) |
+| `orderBy` | string | No | — | `"transferTime"` |
+| `sortOrder` | string | No | — | `"asc"` or `"desc"` |
+
+### Request
+
+```bash
+curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/nfts/contracts/by-address" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "addresses": [{
+      "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+      "networks": ["eth-mainnet"]
+    }],
+    "withMetadata": true
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "contracts": [
+      {
+        "network": "eth-mainnet",
+        "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+        "contract": {
+          "address": "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+          "name": "BoredApeYachtClub",
+          "symbol": "BAYC",
+          "totalSupply": "10000",
+          "tokenType": "ERC721",
+          "contractDeployer": "0xaba7161a7fb69c88e16ed9f455ce62b791ee4d03",
+          "deployedBlockNumber": 12287507,
+          "openSeaMetadata": {
+            "collectionName": "Bored Ape Yacht Club",
+            "floorPrice": 10.5
+          },
+          "isSpam": false
+        }
+      }
+    ],
+    "totalCount": 5,
+    "pageKey": null
+  }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.contracts` | array | Contract objects |
+| `data.contracts[].network` | string | Network slug |
+| `data.contracts[].address` | string | Wallet address |
+| `data.contracts[].contract` | object | Contract info (same as NFT API `getContractMetadata`) |
+| `data.totalCount` | integer | Total collections |
+| `data.pageKey` | string | Pagination cursor |
+
+---
+
+## `POST /transactions/history/by-address` (Beta)
+
+Returns transaction history for a wallet across networks.
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `addresses` | array | Yes | — | Wallet/network pairs (max 1 pair, max 2 networks) |
+| `addresses[].address` | string | Yes | — | Wallet address |
+| `addresses[].networks` | string[] | Yes | — | Network slugs (beta: `eth-mainnet`, `base-mainnet` only) |
+| `before` | string | No | — | Cursor for previous page |
+| `after` | string | No | — | Cursor for next page |
+| `limit` | integer | No | `25` | Results per page (max 50) |
+
+### Request
+
+```bash
+curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/transactions/history/by-address" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "addresses": [{
+      "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+      "networks": ["eth-mainnet"]
+    }],
+    "limit": 5
+  }'
+```
+
+### Response
+
+```json
+{
+  "transactions": [
+    {
+      "network": "eth-mainnet",
+      "hash": "0x3847245c01829b043431067fb2bfa95f7b5bdc7e...",
+      "timeStamp": "2025-06-01T10:30:00.000Z",
+      "blockNumber": "20000000",
+      "blockHash": "0x...",
+      "nonce": "42",
+      "transactionIndex": "5",
+      "fromAddress": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+      "toAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "contractAddress": null,
+      "value": "0",
+      "gasUsed": "46000",
+      "effectiveGasPrice": "15000000000",
+      "cumulativeGasUsed": "1234567",
+      "logs": [],
+      "internalTxns": []
+    }
+  ],
+  "before": "cursor_prev...",
+  "after": "cursor_next...",
+  "totalCount": 500
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `transactions` | array | Transaction objects |
+| `transactions[].network` | string | Network slug |
+| `transactions[].hash` | string | Transaction hash |
+| `transactions[].timeStamp` | string | ISO 8601 timestamp |
+| `transactions[].blockNumber` | string | Block number |
+| `transactions[].fromAddress` | string | Sender address |
+| `transactions[].toAddress` | string | Recipient address |
+| `transactions[].contractAddress` | string | Deployed contract address (null if not a deployment) |
+| `transactions[].value` | string | ETH value transferred |
+| `transactions[].gasUsed` | string | Gas used |
+| `transactions[].effectiveGasPrice` | string | Effective gas price |
+| `transactions[].logs` | array | Event logs |
+| `transactions[].internalTxns` | array | Internal transactions |
+| `before` | string | Cursor for previous page |
+| `after` | string | Cursor for next page |
+| `totalCount` | integer | Total transactions |
+
+---
+
+## Notes
+
+- Use the smallest `networks` list you need — each network adds to response time.
+- NFT metadata can be missing or malformed. Always handle null fields.
+- The Transactions endpoint is in beta and only supports Ethereum and Base mainnets.
+- Paginate large wallets using `pageKey` (for asset endpoints) or `before`/`after` (for transactions).
 
 ## Agentic Gateway
+
 This API is also available via `https://x402.alchemy.com/data/v1/...` without an API key.
 See the `agentic-gateway` skill for SIWE authentication and x402 payment setup.
 
-## Related Files
-- `data-token-api.md`
-- `data-nft-api.md`
-- `data-transfers-api.md`
-- `recipes-get-portfolio.md`
-
 ## Official Docs
-- [Portfolio APIs](https://www.alchemy.com/docs/docs/reference/portfolio-apis)
-- [Token Balances By Wallet](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-token-balances-by-address)
-- [NFTs By Wallet](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nfts-by-address)
-- [NFT Collections By Wallet](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nft-contracts-by-address)
-- [Transactions By Wallet (Beta)](https://www.alchemy.com/docs/data/beta-apis/beta-api-endpoints/beta-api-endpoints/get-transaction-history-by-address)
+- [Portfolio APIs Overview](https://www.alchemy.com/docs/reference/portfolio-apis)
+- [Tokens by Address](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-tokens-by-address)
+- [Token Balances by Address](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-token-balances-by-address)
+- [NFTs by Address](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nfts-by-address)
+- [NFT Contracts by Address](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nft-contracts-by-address)
+- [Transaction History by Address (Beta)](https://www.alchemy.com/docs/data/beta-apis/beta-api-endpoints/beta-api-endpoints/get-transaction-history-by-address)

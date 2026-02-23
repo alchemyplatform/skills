@@ -8,80 +8,203 @@ tags:
   - data
 related:
   - recipes-get-prices-current-historical.md
-updated: 2026-02-05
+updated: 2026-02-23
 ---
 # Prices API
 
-## Summary
-Query token prices for current and historical data using Alchemy's Prices API.
+Query current and historical token prices. REST endpoints (GET and POST).
 
-## Primary Use Cases
-- Portfolio valuation.
-- Price charts and historical analytics.
-- Risk calculations.
+**Base URL**: `https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY`
 
-## When To Use / Not Use
-- Use for spot and historical prices.
-- Avoid if you require exchange-level order book data.
+---
 
-## Auth & Setup
-- Base URL: `https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY`
+## `GET /tokens/by-symbol`
 
-## Network Selection
-- Symbol-based endpoints are network-agnostic.
-- Address-based endpoints require a `network` per token address.
+Get current prices by token symbol.
 
-## Endpoints / Methods (Spec-Derived)
-### `GET /tokens/by-symbol`
-- Query param: `symbols` (comma-separated string, e.g., `ETH,BTC`)
+### Parameters
 
-### `POST /tokens/by-address`
-- Body field: `addresses[]` (array of `{ network, address }`)
-- Limits: max 25 addresses, max 3 networks
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `symbols` | string (query) | Yes | Comma-separated token symbols (max 25). Example: `symbols=ETH,BTC,USDC` |
 
-### `POST /tokens/historical`
-- Body supports one of:
-- `{ symbol, startTime, endTime, interval?, withMarketData? }`
-- `{ network, address, startTime, endTime, interval?, withMarketData? }`
-- `startTime` / `endTime` can be ISO-8601 strings or seconds since epoch.
-- `interval` enum: `5m`, `1h`, `1d`
-- Max ranges: `5m` (7d), `1h` (30d), `1d` (1yr)
+### Request
 
-## Example Requests
 ```bash
 curl -s "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-symbol?symbols=ETH,BTC"
 ```
 
-```bash
-curl -s -X POST "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/historical" \
-  -H "Content-Type: application/json" \
-  -d '{"symbol":"ETH","startTime":"2024-01-01T00:00:00Z","endTime":"2024-01-02T00:00:00Z"}'
+### Response
+
+```json
+{
+  "data": [
+    {
+      "symbol": "ETH",
+      "prices": [
+        { "currency": "usd", "value": "1970.69", "lastUpdatedAt": "2025-06-01T12:00:00Z" }
+      ],
+      "error": null
+    },
+    {
+      "symbol": "BTC",
+      "prices": [
+        { "currency": "usd", "value": "67727.36", "lastUpdatedAt": "2025-06-01T12:00:00Z" }
+      ],
+      "error": null
+    }
+  ]
+}
 ```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | array | List of token price objects |
+| `data[].symbol` | string | Token symbol |
+| `data[].prices` | array | Price entries (typically one per currency) |
+| `data[].prices[].currency` | string | Currency code (e.g., `"usd"`) |
+| `data[].prices[].value` | string | Price as decimal string |
+| `data[].prices[].lastUpdatedAt` | string | ISO 8601 timestamp |
+| `data[].error` | object | Error details if symbol not found (null on success) |
+
+---
+
+## `POST /tokens/by-address`
+
+Get current prices by contract address. Must be POST with JSON body.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `addresses` | array (body) | Yes | Token address/network pairs (max 25 addresses, max 3 networks) |
+| `addresses[].network` | string | Yes | Network slug (e.g., `"eth-mainnet"`) |
+| `addresses[].address` | string | Yes | Token contract address |
+
+### Request
 
 ```bash
 curl -s -X POST "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-address" \
   -H "Content-Type: application/json" \
-  -d '{"addresses":[{"network":"eth-mainnet","address":"0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"}]}'
+  -d '{
+    "addresses": [
+      { "network": "eth-mainnet", "address": "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" },
+      { "network": "eth-mainnet", "address": "0xdac17f958d2ee523a2206206994597c13d831ec7" }
+    ]
+  }'
 ```
 
-## Error Handling
-- Handle `429` and invalid symbol errors.
+### Response
 
-## Performance / Limits / Compute Units
-- Prefer larger intervals for long ranges.
+```json
+{
+  "data": [
+    {
+      "network": "eth-mainnet",
+      "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "prices": [
+        { "currency": "usd", "value": "0.9998", "lastUpdatedAt": "2025-06-01T12:00:00Z" }
+      ],
+      "error": null
+    },
+    {
+      "network": "eth-mainnet",
+      "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "prices": [
+        { "currency": "usd", "value": "1.0001", "lastUpdatedAt": "2025-06-01T12:00:00Z" }
+      ],
+      "error": null
+    }
+  ]
+}
+```
 
-## Gotchas & Edge Cases
-- Not all tokens are supported; fallback to a supported symbol list.
+---
 
-## Testing / Mocking
-- Use fixed date ranges to keep results stable.
+## `POST /tokens/historical`
+
+Get historical token prices with configurable intervals. Must be POST with JSON body.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `symbol` | string | Conditional | Token symbol (e.g., `"ETH"`). Use this OR `network`+`address`. |
+| `network` | string | Conditional | Network slug. Use with `address` instead of `symbol`. |
+| `address` | string | Conditional | Token contract address. Use with `network` instead of `symbol`. |
+| `startTime` | string or number | Yes | Start time (ISO 8601 string or Unix timestamp in seconds) |
+| `endTime` | string or number | Yes | End time (ISO 8601 string or Unix timestamp in seconds) |
+| `interval` | string | No | `"5m"`, `"1h"`, or `"1d"` (default: `"1d"`) |
+| `withMarketData` | boolean | No | Include market cap and volume (default: `false`) |
+
+**Max ranges**: `5m` → 7 days, `1h` → 30 days, `1d` → 1 year.
+
+### Request
+
+```bash
+curl -s -X POST "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/historical" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "symbol": "ETH",
+    "startTime": "2025-01-01T00:00:00Z",
+    "endTime": "2025-01-07T00:00:00Z",
+    "interval": "1h",
+    "withMarketData": true
+  }'
+```
+
+### Response
+
+```json
+{
+  "data": {
+    "symbol": "ETH",
+    "prices": [
+      {
+        "value": "3350.12",
+        "timestamp": "2025-01-01T00:01:13Z",
+        "marketCap": "274292310008.22",
+        "totalVolume": "6715146404.61"
+      },
+      {
+        "value": "3348.50",
+        "timestamp": "2025-01-01T01:03:18Z",
+        "marketCap": "274100000000.00",
+        "totalVolume": "6700000000.00"
+      }
+    ]
+  }
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.symbol` | string | Token symbol |
+| `data.prices` | array | Chronologically sorted price points |
+| `data.prices[].value` | string | Price as decimal string |
+| `data.prices[].timestamp` | string | ISO 8601 timestamp |
+| `data.prices[].marketCap` | string | Market cap (only if `withMarketData: true`) |
+| `data.prices[].totalVolume` | string | 24h volume (only if `withMarketData: true`) |
+
+---
+
+## Notes
+
+- Not all tokens are supported. Check the `error` field in the response for unsupported tokens.
+- Historical data returns single price points per interval, not OHLCV candles.
+- Symbol-based endpoints are network-agnostic. Address-based endpoints require specifying the network.
 
 ## Agentic Gateway
+
 This API is also available via `https://x402.alchemy.com/prices/v1/...` without an API key.
 See the `agentic-gateway` skill for SIWE authentication and x402 payment setup.
 
-## Related Files
-- `recipes-get-prices-current-historical.md`
-
 ## Official Docs
-- [Prices API Reference](https://www.alchemy.com/docs/reference/prices-api)
+- [Prices API Quickstart](https://www.alchemy.com/docs/reference/prices-api-quickstart)
+- [Token Prices by Symbol](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-symbol)
+- [Token Prices by Address](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-token-prices-by-address)
+- [Historical Token Prices](https://www.alchemy.com/docs/data/prices-api/prices-api-endpoints/prices-api-endpoints/get-historical-token-prices)
