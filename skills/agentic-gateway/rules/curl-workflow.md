@@ -1,11 +1,11 @@
 # Curl Workflow
 
-A lightweight way to make blockchain RPC calls using curl and short scripts, without setting up a full npm project. Ideal for quick one-off queries.
+A lightweight way to call any Alchemy gateway endpoint using curl and short scripts, without setting up a full npm project. The gateway supports JSON-RPC, NFT, Portfolio, and Prices APIs — all accessible with the same SIWE auth and payment flow.
 
 ## When to Use
 
-- Answering quick blockchain questions (latest block, ETH balance, token balance)
-- Making a few RPC calls from the command line or a bash script
+- Answering quick blockchain questions (latest block, ETH balance, token balance, NFT ownership, token prices, portfolio data)
+- Making a few API calls from the command line or a bash script
 - No existing npm project and you don't want to set one up
 
 For SDK-based workflows with automatic payment handling, see [making-requests](making-requests.md) instead.
@@ -14,7 +14,7 @@ For SDK-based workflows with automatic payment handling, see [making-requests](m
 
 If no wallet is set up yet (no `wallet.json` or private key available), run the [wallet-bootstrap](wallet-bootstrap.md) flow first.
 If `siwe-token.txt` does not exist or the token is expired, run Step 1 below.
-Then proceed directly to Step 2 to make the RPC call.
+Then proceed directly to Step 2 to make API calls.
 
 ## Prerequisites
 
@@ -88,35 +88,39 @@ TOKEN=$(cat siwe-token.txt)
 
 > **Important:** SIWE tokens expire after 1 hour. If you get a 401 `MESSAGE_EXPIRED` error, regenerate the token (see Step 4). Always add `siwe-token.txt` to `.gitignore`.
 
-## Step 2: Make RPC Calls with curl
+## Step 2: Make API Calls with curl
 
-Use the token to make JSON-RPC requests:
+All gateway endpoints share the same base URL (`https://x402.alchemy.com`) and auth pattern. See [reference](reference.md) for the full list of supported endpoints, chain network slugs, and API methods.
 
-### Get the Latest Block Number
+---
+
+### Node JSON-RPC (`/:chainNetwork/v2`)
+
+#### Get the Latest Block Number
 
 ```bash
 TOKEN=$(cat siwe-token.txt)
 
-curl -s -X POST "https://x402.alchemy.com/rpc/eth-mainnet" \
+curl -s -X POST "https://x402.alchemy.com/eth-mainnet/v2" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   -H "Authorization: SIWE $TOKEN" \
   -d '{"id":1,"jsonrpc":"2.0","method":"eth_blockNumber"}'
 ```
 
-### Get ETH Balance for an Address
+#### Get ETH Balance for an Address
 
 ```bash
 TOKEN=$(cat siwe-token.txt)
 
-curl -s -X POST "https://x402.alchemy.com/rpc/eth-mainnet" \
+curl -s -X POST "https://x402.alchemy.com/eth-mainnet/v2" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   -H "Authorization: SIWE $TOKEN" \
   -d '{"id":1,"jsonrpc":"2.0","method":"eth_getBalance","params":["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045","latest"]}'
 ```
 
-### Read a Contract (e.g. USDC `balanceOf`)
+#### Read a Contract (e.g. USDC `balanceOf`)
 
 The `eth_call` method lets you call read-only contract functions. For ERC-20 `balanceOf`, the data is the function selector `0x70a08231` followed by the address padded to 32 bytes:
 
@@ -125,14 +129,61 @@ TOKEN=$(cat siwe-token.txt)
 
 # USDC balanceOf(0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045) on Ethereum Mainnet
 # USDC contract: 0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
-curl -s -X POST "https://x402.alchemy.com/rpc/eth-mainnet" \
+curl -s -X POST "https://x402.alchemy.com/eth-mainnet/v2" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   -H "Authorization: SIWE $TOKEN" \
   -d '{"id":1,"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48","data":"0x70a08231000000000000000000000000d8dA6BF26964aF9D7eEd9e03E53415D37aA96045"},"latest"]}'
 ```
 
-Use any chain by changing the URL slug (e.g. `base-mainnet`, `arb-mainnet`). See [reference](reference.md) for all supported chains.
+---
+
+### NFT API (`/:chainNetwork/nft/v3/*`)
+
+#### Get NFTs Owned by an Address
+
+```bash
+TOKEN=$(cat siwe-token.txt)
+
+curl -s -G "https://x402.alchemy.com/eth-mainnet/nft/v3/getNFTsForOwner" \
+  --data-urlencode "owner=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" \
+  --data-urlencode "withMetadata=true" \
+  --data-urlencode "pageSize=10" \
+  -H "Accept: application/json" \
+  -H "Authorization: SIWE $TOKEN"
+```
+
+---
+
+### Prices API (`/prices/v1/tokens/*`)
+
+#### Get Token Prices by Symbol
+
+```bash
+TOKEN=$(cat siwe-token.txt)
+
+curl -s -G "https://x402.alchemy.com/prices/v1/tokens/by-symbol" \
+  --data-urlencode "symbols=ETH" \
+  --data-urlencode "symbols=BTC" \
+  -H "Accept: application/json" \
+  -H "Authorization: SIWE $TOKEN"
+```
+
+---
+
+### Portfolio API (`/data/v1/assets/*`)
+
+#### Get Token Balances Across Chains
+
+```bash
+TOKEN=$(cat siwe-token.txt)
+
+curl -s -X POST "https://x402.alchemy.com/data/v1/assets/tokens/by-address" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -H "Authorization: SIWE $TOKEN" \
+  -d '{"addresses":["0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"],"withMetadata":true}'
+```
 
 ## Step 3: Handle 402 Payment Required
 
@@ -142,7 +193,7 @@ If curl returns HTTP 402, the gateway requires a one-time USDC payment for this 
 TOKEN=$(cat siwe-token.txt)
 
 # Save response headers and capture HTTP status code
-HTTP_CODE=$(curl -s -o /dev/null -D headers.txt -w "%{http_code}" -X POST "https://x402.alchemy.com/rpc/eth-mainnet" \
+HTTP_CODE=$(curl -s -o /dev/null -D headers.txt -w "%{http_code}" -X POST "https://x402.alchemy.com/eth-mainnet/v2" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
   -H "Authorization: SIWE $TOKEN" \
@@ -156,7 +207,7 @@ if [ "$HTTP_CODE" = "402" ]; then
   PAYMENT_SIG=$(npx tsx create-payment.ts "$PAYMENT_REQUIRED")
 
   # Retry with payment
-  curl -s -X POST "https://x402.alchemy.com/rpc/eth-mainnet" \
+  curl -s -X POST "https://x402.alchemy.com/eth-mainnet/v2" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
     -H "Authorization: SIWE $TOKEN" \

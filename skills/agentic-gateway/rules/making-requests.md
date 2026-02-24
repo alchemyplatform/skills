@@ -1,4 +1,6 @@
-# Making RPC Requests
+# Making Requests
+
+The gateway supports JSON-RPC, NFT, Prices, and Portfolio APIs — all with the same SIWE auth and x402 payment flow. See [reference](reference.md) for the full list of supported endpoints, chain network slugs, and API methods.
 
 Use either `@x402/fetch` or `@x402/axios` to make requests. Both automatically handle the 402 → sign → retry flow so you don't need to manage payments manually.
 
@@ -183,16 +185,6 @@ The wallet has no account or credits. When using `@x402/fetch` or `@x402/axios`,
 }
 ```
 
-## Supported Chains
+## Supported Chains and Endpoints
 
-The gateway proxies to any chain Alchemy supports. Use the chain-network slug as the `:chainNetwork` path parameter:
-
-```
-https://x402.alchemy.com/{chainNetwork}/v2
-```
-
-See [reference](reference.md) for the full list of supported chain network slugs (30+ EVM chains and non-EVM chains like Solana and Bitcoin).
-
-## Supported RPC Methods
-
-The gateway proxies any valid JSON-RPC method to Alchemy (e.g. `eth_blockNumber`, `eth_getBalance`, `eth_call`, `eth_getTransactionByHash`, etc.). The chain is determined by the URL slug.
+See [reference](reference.md) for supported chain network slugs, all available routes, and detailed API method documentation.
