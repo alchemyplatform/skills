@@ -134,22 +134,36 @@ Get historical token prices with configurable intervals. Must be POST with JSON 
 | `symbol` | string | Conditional | Token symbol (e.g., `"ETH"`). Use this OR `network`+`address`. |
 | `network` | string | Conditional | Network slug. Use with `address` instead of `symbol`. |
 | `address` | string | Conditional | Token contract address. Use with `network` instead of `symbol`. |
-| `startTime` | string or number | Yes | Start time (ISO 8601 string or Unix timestamp in seconds) |
-| `endTime` | string or number | Yes | End time (ISO 8601 string or Unix timestamp in seconds) |
+| `startTime` | ISO 8601 string or integer | Yes | Start time (e.g., `"2025-01-01T00:00:00Z"` or `1735689600`) |
+| `endTime` | ISO 8601 string or integer | Yes | End time (e.g., `"2025-01-07T00:00:00Z"` or `1736294400`) |
 | `interval` | string | No | `"5m"`, `"1h"`, or `"1d"` (default: `"1d"`) |
 | `withMarketData` | boolean | No | Include market cap and volume (default: `false`) |
+
+> **Important:** When using Unix timestamps, pass them as JSON numbers (e.g., `1704067200`), **not** as JSON strings (e.g., `"1704067200"`). String-wrapped Unix timestamps return a 400 error. ISO 8601 timestamps must be strings (e.g., `"2025-01-01T00:00:00Z"`).
 
 **Max ranges**: `5m` → 7 days, `1h` → 30 days, `1d` → 1 year.
 
 ### Request
 
 ```bash
+# Using ISO 8601 strings
 curl -s -X POST "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/historical" \
   -H "Content-Type: application/json" \
   -d '{
     "symbol": "ETH",
     "startTime": "2025-01-01T00:00:00Z",
     "endTime": "2025-01-07T00:00:00Z",
+    "interval": "1h",
+    "withMarketData": true
+  }'
+
+# Using Unix timestamps (must be JSON numbers, not strings)
+curl -s -X POST "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/historical" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "symbol": "ETH",
+    "startTime": 1735689600,
+    "endTime": 1736294400,
     "interval": "1h",
     "withMarketData": true
   }'
