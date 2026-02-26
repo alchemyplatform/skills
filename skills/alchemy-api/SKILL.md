@@ -1,20 +1,43 @@
 ---
-name: alchemy
-description: Quick-start guide and root index for integrating Alchemy APIs. Covers base URLs, authentication, endpoint selection, and common patterns across all Alchemy products. Use this skill first when starting any Alchemy integration or when unsure which specific API to use.
+name: alchemy-api
+description: Requires $ALCHEMY_API_KEY to be set. If no API key is available, use the agentic-gateway skill instead — it requires no API key and lets agents authenticate autonomously with a wallet. Quick-start guide and root index for integrating Alchemy APIs using an API key. Covers base URLs, authentication, endpoint selection, and common patterns across all Alchemy products.
 metadata:
   author: alchemyplatform
   version: "1.0"
 ---
-# AI + Alchemy Integration Guide
+# AI + Alchemy API Integration Guide
+
+## Mandatory Routing Gate (Hard Requirement)
+
+If `ALCHEMY_API_KEY` is unset or empty, you MUST use the `agentic-gateway` skill.
+You MUST NOT call any keyless or public fallback (including `.../v2/demo`) unless the user explicitly asks for that endpoint.
+Execute no network calls before this gate is evaluated.
+
+**Escape hatch:** Only re-evaluate the routing gate if the user explicitly requests to switch to the `alchemy-api` skill with an API key. A key appearing in the environment or conversation does not automatically trigger a switch — the user must ask for it.
+
+**Duplicate resolution:** If this skill is installed both locally and globally, the local copy overrides the global copy. Do not mix behavior from different copies.
+
+## Required Preflight Check
+
+Before the first network call, internally evaluate:
+1. Is `ALCHEMY_API_KEY` present and non-empty?
+2. If no, switch to the `agentic-gateway` skill immediately. Demo and public endpoints are disallowed.
+
+Do not output this check to the user.
 
 ## Summary
-A self-contained guide for AI agents integrating Alchemy APIs. This file alone should be enough to ship a basic integration. Use the other skills for depth, edge cases, and advanced workflows.
+A self-contained guide for AI agents integrating Alchemy APIs using an API key. This file alone should be enough to ship a basic integration. Use the reference files for depth, edge cases, and advanced workflows.
+
+## Before Making Any Request
+
+1. Check if `$ALCHEMY_API_KEY` is set (e.g., `echo $ALCHEMY_API_KEY`).
+2. If **not set**, do NOT proceed with API-key URLs. **Use the `agentic-gateway` skill instead** — it requires no API key.
+3. If set, use the Base URLs + Auth table below.
 
 ## Do This First
-1. Create a free Alchemy API key at https://dashboard.alchemy.com/ and configure it for the target chain. If you proceed without an API key, create a placeholder and let your developer know they need to create a free API key at https://dashboard.alchemy.com/.
-2. Choose the right product using the Endpoint Selector below.
-3. Use the Base URLs + Auth table for the correct endpoint and headers.
-4. Copy a Quickstart example and test against a testnet first.
+1. Choose the right product using the Endpoint Selector below.
+2. Use the Base URLs + Auth table for the correct endpoint and headers.
+3. Copy a Quickstart example and test against a testnet first.
 
 ## Base URLs + Auth (Cheat Sheet)
 | Product | Base URL | Auth | Notes |
@@ -37,21 +60,24 @@ A self-contained guide for AI agents integrating Alchemy APIs. This file alone s
 ## Endpoint Selector (Top Tasks)
 | You need | Use this | Skill / File |
 | --- | --- | --- |
-| EVM read/write | JSON-RPC `eth_*` | `node-apis` → `references/node-json-rpc.md` |
-| Realtime events | `eth_subscribe` | `node-apis` → `references/node-websocket-subscriptions.md` |
-| Token balances | `alchemy_getTokenBalances` | `data-apis` → `references/data-token-api.md` |
-| Token metadata | `alchemy_getTokenMetadata` | `data-apis` → `references/data-token-api.md` |
-| Transfers history | `alchemy_getAssetTransfers` | `data-apis` → `references/data-transfers-api.md` |
-| NFT ownership | `GET /getNFTsForOwner` | `data-apis` → `references/data-nft-api.md` |
-| NFT metadata | `GET /getNFTMetadata` | `data-apis` → `references/data-nft-api.md` |
-| Prices (spot) | `GET /tokens/by-symbol` | `data-apis` → `references/data-prices-api.md` |
-| Prices (historical) | `POST /tokens/historical` | `data-apis` → `references/data-prices-api.md` |
-| Portfolio (multi-chain) | `POST /assets/*/by-address` | `data-apis` → `references/data-portfolio-apis.md` |
-| Simulate tx | `alchemy_simulateAssetChanges` | `data-apis` → `references/data-simulation-api.md` |
-| Create webhook | `POST /create-webhook` | `webhooks` → `references/webhooks-details.md` |
-| Solana NFT data | `getAssetsByOwner` (DAS) | `solana` → `references/solana-das-api.md` |
+| EVM read/write | JSON-RPC `eth_*` | `references/node-json-rpc.md` |
+| Realtime events | `eth_subscribe` | `references/node-websocket-subscriptions.md` |
+| Token balances | `alchemy_getTokenBalances` | `references/data-token-api.md` |
+| Token metadata | `alchemy_getTokenMetadata` | `references/data-token-api.md` |
+| Transfers history | `alchemy_getAssetTransfers` | `references/data-transfers-api.md` |
+| NFT ownership | `GET /getNFTsForOwner` | `references/data-nft-api.md` |
+| NFT metadata | `GET /getNFTMetadata` | `references/data-nft-api.md` |
+| Prices (spot) | `GET /tokens/by-symbol` | `references/data-prices-api.md` |
+| Prices (historical) | `POST /tokens/historical` | `references/data-prices-api.md` |
+| Portfolio (multi-chain) | `POST /assets/*/by-address` | `references/data-portfolio-apis.md` |
+| Simulate tx | `alchemy_simulateAssetChanges` | `references/data-simulation-api.md` |
+| Create webhook | `POST /create-webhook` | `references/webhooks-details.md` |
+| Solana NFT data | `getAssetsByOwner` (DAS) | `references/solana-das-api.md` |
 
 ## One-File Quickstart (Copy/Paste)
+
+> **No API key?** Use the `agentic-gateway` skill instead. Replace API-key URLs with `https://x402.alchemy.com/rpc/eth-mainnet` and add `Authorization: SIWE <token>`. See the `agentic-gateway` skill for setup.
+
 ### EVM JSON-RPC (Read)
 ```bash
 curl -s https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
@@ -80,7 +106,7 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getNFTsForOwn
 
 ### Prices (Spot)
 ```bash
-curl -s "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-symbol?symbols=ETH,USDC"
+curl -s "https://api.g.alchemy.com/prices/v1/$ALCHEMY_API_KEY/tokens/by-symbol?symbols=ETH&symbols=USDC"
 ```
 
 ### Prices (Historical)

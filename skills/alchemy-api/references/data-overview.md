@@ -26,9 +26,14 @@ Higher-level APIs for asset discovery, wallet analytics, transfer history, and p
 - Prefer these APIs when you want asset analytics or historical data without maintaining a custom indexer.
 - If you need real-time updates, pair with the `webhooks` skill.
 
+## Agentic Gateway
+Most Data APIs are also available via the Agentic Gateway (`https://x402.alchemy.com/...`) without an API key.
+See the `agentic-gateway` skill for SIWE authentication and x402 payment setup.
+
 ## Cross-References
 - `node-apis` skill → `node-enhanced-apis.md` for related RPC-style endpoints.
 - `recipes` skill for end-to-end workflows.
+- `agentic-gateway` skill for easy agent access to Alchemy's developer platform.
 
 ## Official Docs
 - [Data APIs Overview](https://www.alchemy.com/docs/reference/data-overview)
