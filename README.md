@@ -31,11 +31,7 @@ Lets agents easily access Alchemy's developer platform. Uses SIWE (Sign-In With 
 ## Installation
 
 ```bash
-# Install the API key skill
-npx skills add https://github.com/alchemyplatform/skills --skill alchemy-api
-
-# Install the gateway skill
-npx skills add https://github.com/alchemyplatform/skills --skill agentic-gateway
+npx skills add alchemyplatform/skills --yes
 ```
 
 ## Specification
