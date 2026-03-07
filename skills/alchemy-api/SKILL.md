@@ -11,7 +11,14 @@ metadata:
 
 ## Mandatory Routing Gate (Hard Requirement)
 
-If `ALCHEMY_API_KEY` is unset or empty, you MUST use the `agentic-gateway` skill.
+Before the first network call or implementation step, you MUST ask the user the following question and wait for an explicit answer:
+
+> Do you want to use an existing Alchemy API key, or should I use the agentic gateway flow instead?
+
+If the user chooses the API key path, continue with this skill.
+If the user chooses the agentic gateway path, switch to the `agentic-gateway` skill immediately and follow its existing wallet flow.
+If the user chooses the API key path but `ALCHEMY_API_KEY` is unset or empty, tell them they can create a free API key at https://dashboard.alchemy.com/ or switch to the `agentic-gateway` skill.
+
 You MUST NOT call any keyless or public fallback (including `.../v2/demo`) unless the user explicitly asks for that endpoint.
 Execute no network calls before this gate is evaluated.
 
@@ -22,19 +29,25 @@ Execute no network calls before this gate is evaluated.
 ## Required Preflight Check
 
 Before the first network call, internally evaluate:
-1. Is `ALCHEMY_API_KEY` present and non-empty?
-2. If no, switch to the `agentic-gateway` skill immediately. Demo and public endpoints are disallowed.
+1. Has the user explicitly chosen API key or agentic gateway?
+2. If the user chose API key, is `ALCHEMY_API_KEY` present and non-empty?
+3. If the user chose agentic gateway, switch to the `agentic-gateway` skill immediately. Demo and public endpoints are disallowed.
+4. If the user chose API key but no key is available, do not proceed with API-key URLs until the user provides a key or switches to the gateway flow.
 
-Do not output this check to the user.
+Do not output this internal checklist to the user.
 
 ## Summary
 A self-contained guide for AI agents integrating Alchemy APIs using an API key. This file alone should be enough to ship a basic integration. Use the reference files for depth, edge cases, and advanced workflows.
 
+Developers can always create a free API key at https://dashboard.alchemy.com/.
+
 ## Before Making Any Request
 
-1. Check if `$ALCHEMY_API_KEY` is set (e.g., `echo $ALCHEMY_API_KEY`).
-2. If **not set**, do NOT proceed with API-key URLs. **Use the `agentic-gateway` skill instead** — it requires no API key.
-3. If set, use the Base URLs + Auth table below.
+1. Ask the user whether they want to use an existing Alchemy API key or the agentic gateway flow.
+2. If they choose the API key path, check if `$ALCHEMY_API_KEY` is set (e.g., `echo $ALCHEMY_API_KEY`).
+3. If they choose the API key path and no key is set, tell them they can create a free key at https://dashboard.alchemy.com/ or switch to the `agentic-gateway` skill.
+4. If they choose the agentic gateway flow, switch to the `agentic-gateway` skill and let it handle the existing wallet vs new wallet prompt.
+5. If they choose the API key path and the key is set, use the Base URLs + Auth table below.
 
 ## Do This First
 1. Choose the right product using the Endpoint Selector below.

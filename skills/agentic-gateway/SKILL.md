@@ -15,7 +15,7 @@ A skill that lets agents easily access Alchemy's developer platform. The gateway
 
 ## Non-Bypass Rule
 
-When this skill is selected due to missing API key, do not use alternative Alchemy endpoints as an optimization.
+When this skill is selected because the user chose the agentic flow or because no API key is available, do not use alternative Alchemy endpoints as an optimization.
 Required flow: wallet -> SIWE -> request -> handle 402 payment -> retry same request.
 
 **Escape hatch:** Only exit the gateway flow if the user explicitly requests to switch to the `alchemy-api` skill with an API key. A key appearing in the environment or conversation does not automatically trigger a switch — the user must ask for it.
@@ -31,8 +31,9 @@ Required flow: wallet -> SIWE -> request -> handle 402 payment -> retry same req
 ## Required Preflight Check
 
 Before the first network call, internally evaluate:
-1. Is `ALCHEMY_API_KEY` absent? If no, this skill does not apply.
-2. Is a wallet confirmed with the user? If no, set `wallet=pending`.
+1. Did the user explicitly choose the agentic gateway flow? If yes, this skill applies.
+2. If not, is `ALCHEMY_API_KEY` absent? If no, this skill does not apply.
+3. Is a wallet confirmed with the user? If no, set `wallet=pending`.
 
 If the gateway route applies, demo and public endpoints are disallowed.
 If `wallet=pending`, you MUST follow [wallet-bootstrap](rules/wallet-bootstrap.md) and wait for user confirmation before proceeding. Do not read wallet files or generate keys.
@@ -119,4 +120,3 @@ Do not output this check to the user.
 - Never read or write wallet key files with Read/Write/Edit tools
 - Always ask the user about wallet choice before proceeding
 - See [wallet-bootstrap](rules/wallet-bootstrap.md) for the three wallet setup paths
-
