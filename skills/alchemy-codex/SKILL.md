@@ -41,3 +41,9 @@ Then route as follows:
 - Webhooks / Notify setup
 - Account Kit and wallet infrastructure
 - agentic gateway access via x402 or MPP
+
+## Codex bundle notes
+
+- Treat this as a thin Codex router skill, not a place for detailed API or payment-flow instructions
+- Route implementation details to `alchemy-api` or `agentic-gateway` as soon as the auth path is clear
+- When the router changes, keep the bundled copy in `plugins/alchemy/skills/alchemy-codex` aligned with this source skill
