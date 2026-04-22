@@ -29,7 +29,7 @@ If you're unsure whether your skill overlaps, open a draft PR and ask. We'd rath
 1. Fork `alchemyplatform/skills`
 2. Confirm your skill is non-overlapping (see above)
 3. Copy `skills/ecosystem/TEMPLATE/` to `skills/ecosystem/skills/<your-skill>/`
-4. Fill in `SKILL.md` (instructions, scope contract, routing back to first-party) and `agents/openai.yaml` (display name + short description + default prompt for the OpenAI/Codex picker)
+4. Fill in `SKILL.md` (instructions, scope contract, routing back to first-party). Optionally fill in `agents/openai.yaml` for a polished Codex picker entry — see "OpenAI/Codex manifest" below
 5. Add your skill's path to [`/.claude-plugin/plugin.json`](../../.claude-plugin/plugin.json) at the repo root
 6. Open a PR
 
@@ -85,7 +85,9 @@ Without this entry, `npx skills add alchemyplatform/skills` will not discover yo
 
 ## OpenAI/Codex manifest
 
-The TEMPLATE includes `agents/openai.yaml`, which is consumed by [OpenAI Codex](https://developers.openai.com/codex/skills) to render your skill in the picker. The Vercel `skills` CLI bundles this file with the rest of the skill when installing with `--agent codex`; Codex reads it from the installed location.
+The TEMPLATE includes `agents/openai.yaml`, which is consumed by [OpenAI Codex](https://developers.openai.com/codex/skills) to render your skill in the picker. **Recommended but not required** — if you skip it, your skill still installs and works; Codex falls back to deriving picker text from your `SKILL.md` frontmatter, which is denser and less picker-friendly but functional.
+
+The Vercel `skills` CLI bundles this file with the rest of the skill when installing with `--agent codex`; Codex reads it from the installed location.
 
 ```yaml
 interface:

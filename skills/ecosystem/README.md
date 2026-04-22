@@ -21,7 +21,7 @@ skills/ecosystem/
 ├── TEMPLATE/            ← copy this to bootstrap a new skill
 │   ├── SKILL.md
 │   ├── agents/
-│   │   └── openai.yaml  ← OpenAI/Codex picker manifest (required)
+│   │   └── openai.yaml  ← OpenAI/Codex picker manifest (recommended)
 │   └── references/
 └── skills/
     └── <partner>/       ← partner skill (e.g. allium/)
