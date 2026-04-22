@@ -8,14 +8,11 @@ metadata:
   version: "0.1"
   provider: allium
   partner: "true"
-  expires: "2026-10-21"
 ---
 
 # Allium (Wallet PnL, Holdings History, Hyperliquid, Custom SQL)
 
-Allium provides enriched, structured blockchain data across 70+ chains. This ecosystem skill exposes a curated subset of the [upstream `allium-onchain-data` skill](https://github.com/allium-labs/skills): wallet PnL, holdings timeseries, Hyperliquid HyperCore trading data, and custom SQL analytics. For token prices, token metadata, current wallet balances, transaction transfers, or NFT metadata, use the corresponding Alchemy skill instead.
-
-For the full Allium surface (including endpoints not exposed here), install the upstream skill: `npx skills add allium-labs/skills --yes`.
+Allium provides enriched, structured blockchain data across 70+ chains. This skill covers wallet PnL, holdings timeseries, Hyperliquid HyperCore trading data, and custom SQL analytics. For token prices, token metadata, current wallet balances, transaction transfers, or NFT metadata, use the corresponding Alchemy skill instead.
 
 | | |
 | --- | --- |
@@ -235,10 +232,6 @@ If during a session the user's need shifts to surfaces this skill doesn't cover 
 - `alchemy-api` — application code with an Alchemy API key
 - `agentic-gateway` — application code without an API key (x402 / MPP)
 
-## Upstream
-
-Full Allium skill: [allium-labs/skills](https://github.com/allium-labs/skills). Install with `npx skills add allium-labs/skills` if you need endpoints not exposed here (token prices, token metadata, current balances, transaction transfers, NFT metadata).
-
 ---
 
-> **Maintenance:** This skill expires on the date in frontmatter (`expires`). Allium maintains the underlying API surface; this skill itself is maintained jointly by Alchemy and Allium. File issues against `alchemyplatform/skills` with `[ecosystem/allium]` in the title.
+> **Maintenance:** Allium maintains the underlying API surface; this skill itself is maintained jointly by Alchemy and Allium. File issues against `alchemyplatform/skills` with `[ecosystem/allium]` in the title.
