@@ -1,0 +1,4 @@
+interface:
+  display_name: "<Your Skill Display Name>"
+  short_description: "<one-line summary, 25–64 chars, for the OpenAI/Codex picker>"
+  default_prompt: "<one-sentence prompt to inject when this skill is selected; mention the skill by name>"

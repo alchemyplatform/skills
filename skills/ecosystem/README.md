@@ -19,9 +19,16 @@ skills/ecosystem/
 ├── README.md            ← this file
 ├── CONTRIBUTING.md      ← how partners PR a new skill
 ├── TEMPLATE/            ← copy this to bootstrap a new skill
+│   ├── SKILL.md
+│   ├── agents/
+│   │   └── openai.yaml  ← OpenAI/Codex picker manifest (required)
+│   └── references/
 └── skills/
     └── <partner>/       ← partner skill (e.g. allium/)
-        └── SKILL.md
+        ├── SKILL.md
+        ├── agents/
+        │   └── openai.yaml
+        └── references/
 ```
 
 Each partner gets one folder per skill. If a partner ships multiple non-overlapping skills, they live as siblings (e.g. `partner-data/`, `partner-staking/`).

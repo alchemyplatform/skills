@@ -29,7 +29,7 @@ If you're unsure whether your skill overlaps, open a draft PR and ask. We'd rath
 1. Fork `alchemyplatform/skills`
 2. Confirm your skill is non-overlapping (see above)
 3. Copy `skills/ecosystem/TEMPLATE/` to `skills/ecosystem/skills/<your-skill>/`
-4. Fill in `SKILL.md` (instructions, scope contract, routing back to first-party)
+4. Fill in `SKILL.md` (instructions, scope contract, routing back to first-party) and `agents/openai.yaml` (display name + short description + default prompt for the OpenAI/Codex picker)
 5. Add your skill's path to [`/.claude-plugin/plugin.json`](../../.claude-plugin/plugin.json) at the repo root
 6. Open a PR
 
@@ -82,6 +82,21 @@ After adding the skill folder, add its path to `/.claude-plugin/plugin.json`:
 ```
 
 Without this entry, `npx skills add alchemyplatform/skills` will not discover your skill (the Vercel CLI does not recursively walk `./skills/`; it only checks direct children).
+
+## OpenAI/Codex manifest
+
+The TEMPLATE includes `agents/openai.yaml`, which is consumed by [OpenAI Codex](https://developers.openai.com/codex/skills) to render your skill in the picker. The Vercel `skills` CLI bundles this file with the rest of the skill when installing with `--agent codex`; Codex reads it from the installed location.
+
+```yaml
+interface:
+  display_name: "<Your Skill Display Name>"
+  short_description: "<one-line summary, 25–64 chars, for the picker>"
+  default_prompt: "<one-sentence prompt injected when this skill is selected>"
+```
+
+`display_name` and `short_description` should be picker-friendly — the `SKILL.md` frontmatter `description` is too dense for that surface (it is optimized for agent disambiguation, often 300–500 chars). `default_prompt` is what Codex pre-fills when a user picks your skill.
+
+Optional fields in the OpenAI spec: `icon_small`, `icon_large` (relative paths to icon assets) and `brand_color` (hex accent). Not required.
 
 ## License
 
