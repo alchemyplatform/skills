@@ -1,0 +1,4 @@
+interface:
+  display_name: "LI.FI"
+  short_description: "Cross-chain and same-chain swap + bridge routing across 60+ chains via LI.FI"
+  default_prompt: "Use LI.FI for cross-chain or same-chain token swaps and bridge transfers — get a quote, compare routes, or track status of an in-flight cross-chain transfer. For token prices, balances, transaction history, or NFT data, use alchemy-api instead."
