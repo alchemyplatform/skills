@@ -15,7 +15,7 @@ Complete index of all reference files organized by product area. Use the Endpoin
 | `references/node-json-rpc.md` | JSON-RPC (EVM) | Use Alchemy's EVM JSON-RPC endpoints for standard blockchain reads and writes (e.g., `eth_call`, `eth_getLogs`, `eth_sendRawTransaction`). This is the baseline for any EVM integration |
 | `references/node-trace-api.md` | Trace API | Trace APIs expose internal call data and state changes for transactions and blocks. Useful for analytics and auditing |
 | `references/node-utility-api.md` | Utility API | Convenience RPC methods that reduce round trips for common tasks like bulk transaction receipt retrieval |
-| `references/node-websocket-subscriptions.md` | WebSocket Subscriptions | Use WebSockets for real-time blockchain events without polling. Best for pending transactions, new blocks, and logs |
+| `references/node-websocket-subscriptions.md` | WebSocket Subscriptions | Use WebSockets for real-time blockchain events without polling. EVM uses `eth_subscribe`; Solana uses native `*Subscribe` / `*Unsubscribe` PubSub methods (`accountSubscribe`, `programSubscribe`, `logsSubscribe`, `signatureSubscribe`, `slotSubscribe`, `rootSubscribe`) |
 
 ## Data
 | File | Name | Short Description |
@@ -43,8 +43,8 @@ Complete index of all reference files organized by product area. Use the Endpoin
 ## Solana
 | File | Name | Short Description |
 | --- | --- | --- |
-| `references/solana-overview.md` | solana | Solana-specific APIs including standard JSON-RPC, Digital Asset Standard (DAS) for NFTs and compressed assets, and wallet integration. Use when building Solana applications that need RPC access, NFT/asset queries, or Solana wallet tooling. For high-throughput streaming, see the yellowstone-grpc skill |
-| `references/solana-das-api.md` | Solana DAS (Digital Asset Standard) API | DAS provides normalized access to Solana NFT and compressed asset data |
+| `references/solana-overview.md` | solana | Solana-specific APIs including standard JSON-RPC, Digital Asset Standard (DAS) for NFTs and Bubblegum compressed NFTs, the Photon indexer for ZK Compression, WebSocket PubSub subscriptions, and wallet integration. Use when building Solana applications that need RPC access, NFT/asset queries, ZK-compressed state, real-time event streams, or Solana wallet tooling. For high-throughput streaming, see the yellowstone-grpc skill |
+| `references/solana-das-api.md` | Solana DAS (Digital Asset Standard) API | DAS provides normalized access to Solana NFT and Bubblegum compressed NFT (cNFT) data. For ZK Compression accounts/tokens, use the Photon API instead (see solana-overview) |
 | `references/solana-grpc-best-practices.md` | Yellowstone Best Practices | Practical guidance to keep Yellowstone consumers reliable and efficient |
 | `references/solana-grpc-details.md` | Yellowstone gRPC Overview | Yellowstone gRPC provides high-throughput Solana data streams for blocks, transactions, accounts, and slots. Use this for real-time indexing at scale |
 | `references/solana-grpc-examples.md` | Yellowstone Examples | Minimal examples for connecting and subscribing. The exact client depends on your gRPC stack |

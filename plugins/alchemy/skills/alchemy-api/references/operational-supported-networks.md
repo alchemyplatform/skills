@@ -9,7 +9,7 @@ tags:
 related:
   - node-json-rpc.md
   - solana-rpc.md
-updated: 2026-04-22
+updated: 2026-04-30
 ---
 # Supported Networks
 
@@ -195,6 +195,7 @@ polynomial-sepolia
 race-mainnet
 race-sepolia
 risa-testnet
+rise-mainnet
 rise-testnet
 ronin-mainnet
 ronin-saigon

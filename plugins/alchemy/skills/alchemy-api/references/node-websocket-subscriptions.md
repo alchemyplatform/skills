@@ -1,20 +1,22 @@
 ---
 id: references/node-websocket-subscriptions.md
 name: 'WebSocket Subscriptions'
-description: 'Use WebSockets for real-time blockchain events without polling. Best for pending transactions, new blocks, and logs.'
+description: 'Use WebSockets for real-time blockchain events without polling. EVM uses eth_subscribe; Solana uses native *Subscribe / *Unsubscribe PubSub methods.'
 tags:
   - alchemy
   - node-apis
   - evm
+  - solana
   - rpc
 related:
   - node-json-rpc.md
+  - solana-rpc.md
   - webhooks-details.md
-updated: 2026-04-22
+updated: 2026-04-30
 ---
 # WebSocket Subscriptions
 
-Real-time blockchain events via WebSocket. No polling required.
+Real-time blockchain events via WebSocket. No polling required. EVM chains use `eth_subscribe` / `eth_unsubscribe`; Solana uses native `*Subscribe` / `*Unsubscribe` PubSub methods (see [Solana PubSub Subscriptions](#solana-pubsub-subscriptions)).
 
 **Base URL**: `wss://<network>.g.alchemy.com/v2/$ALCHEMY_API_KEY`
 
@@ -198,6 +200,64 @@ ws.on("message", (data) => {
 
 ---
 
+## Solana PubSub Subscriptions
+
+Solana exposes a separate PubSub WebSocket API. Use the Solana base URL:
+
+```text
+wss://solana-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY
+wss://solana-devnet.g.alchemy.com/v2/$ALCHEMY_API_KEY
+```
+
+Do **not** use `eth_subscribe` on Solana. Each method is named `<event>Subscribe` and is paired with a matching `<event>Unsubscribe`. A successful subscribe returns a numeric subscription id; pass that id to the unsubscribe call to cancel the stream. Most methods accept an optional `commitment` parameter (defaults to `finalized`).
+
+### Methods
+
+| Category | Method | Purpose |
+|----------|--------|---------|
+| Accounts | `accountSubscribe` | Notify when one account's lamports or data change. |
+| Accounts | `programSubscribe` | Notify on accounts owned by a program. Scope with `dataSize` / `memcmp` filters; unfiltered streams can be very high bandwidth. |
+| Transactions | `logsSubscribe` | Notify on transaction log messages matching a filter (`all`, `allWithVotes`, or `{ mentions: [pubkey] }`). |
+| Transactions | `signatureSubscribe` | Notify on status changes for a single transaction signature. Auto-completes once the signature reaches the requested commitment. |
+| Cluster | `slotSubscribe` | Notify when the validator processes a new slot. |
+| Cluster | `rootSubscribe` | Notify when the validator sets a new root slot. |
+
+Notifications arrive as JSON-RPC messages with method-specific names (`accountNotification`, `programNotification`, `logsNotification`, `signatureNotification`, `slotNotification`, `rootNotification`). The payload is in `params.result` with the matching `params.subscription` id.
+
+### Example (`@solana/web3.js`)
+
+```ts
+import { Connection, PublicKey } from "@solana/web3.js";
+
+const connection = new Connection(
+  `https://solana-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+  {
+    wsEndpoint: `wss://solana-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+    commitment: "confirmed",
+  }
+);
+
+const pubkey = new PublicKey("So11111111111111111111111111111111111111112");
+const subId = await connection.onAccountChange(pubkey, (accountInfo, ctx) => {
+  console.log("slot:", ctx.slot, "lamports:", accountInfo.lamports);
+});
+
+// Later: await connection.removeAccountChangeListener(subId);
+```
+
+### Solana subscription billing
+
+Solana WebSocket subscriptions are billed by **bandwidth** (per byte delivered), not per-message. Broad streams — especially unfiltered `programSubscribe` and `logsSubscribe` `all` / `allWithVotes` — can scale CU usage quickly.
+
+- Always scope with `mentions` / `mentionsAccountOrProgram` / `dataSize` / `memcmp` where supported.
+- Keep payloads small: prefer `encoding: "base64"` over `jsonParsed`, and `transactionDetails: "signatures"` when you don't need full tx data.
+- Set [usage limits](https://www.alchemy.com/docs/how-to-set-usage-limits-and-alerts-for-your-account) before deploying broad subscriptions in production.
+- See [Compute Unit Costs — Solana WebSocket Subscriptions](https://www.alchemy.com/docs/reference/compute-unit-costs#solana-websocket-subscriptions) for the per-byte CU rate.
+
+For higher-throughput, structured Solana streaming (account / slot / transaction streams with server-side filters), consider Yellowstone gRPC instead — see the `solana-grpc-*` references.
+
+---
+
 ## Notes
 
 - Subscriptions are stateful. Handle reconnects and resubscribe after reconnect.
@@ -208,3 +268,5 @@ ws.on("message", (data) => {
 ## Official Docs
 - [Subscription API Overview](https://www.alchemy.com/docs/reference/subscription-api)
 - [eth_subscribe](https://www.alchemy.com/docs/chains/ethereum/ethereum-api-endpoints/eth-subscribe)
+- [Solana Subscription API Endpoints](https://www.alchemy.com/docs/reference/solana-subscription-api-endpoints)
+- [accountSubscribe](https://www.alchemy.com/docs/reference/account-subscribe), [programSubscribe](https://www.alchemy.com/docs/reference/program-subscribe), [logsSubscribe](https://www.alchemy.com/docs/reference/logs-subscribe), [signatureSubscribe](https://www.alchemy.com/docs/reference/signature-subscribe), [slotSubscribe](https://www.alchemy.com/docs/reference/slot-subscribe), [rootSubscribe](https://www.alchemy.com/docs/reference/root-subscribe)
