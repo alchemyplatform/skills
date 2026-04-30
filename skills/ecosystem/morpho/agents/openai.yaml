@@ -1,0 +1,4 @@
+interface:
+  display_name: "Morpho"
+  short_description: "Lending positions, vaults, markets via @morpho-org/cli on Ethereum and Base"
+  default_prompt: "Use Morpho to query vaults / markets / positions / health factor or prepare an unsigned Morpho transaction (deposit, withdraw, supply, borrow, repay, collateral) with built-in simulation. For prices, balances outside Morpho, or live RPC, use alchemy-api."
