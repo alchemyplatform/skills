@@ -1,0 +1,4 @@
+interface:
+  display_name: "Chainlink"
+  short_description: "On-chain Chainlink Data Feeds (with safety defaults) and CCIP cross-chain messaging"
+  default_prompt: "Use Chainlink to read on-chain Data Feeds with the right safety defaults (staleness check, dynamic decimals, L2 sequencer uptime), or to send / receive CCIP cross-chain messages and programmable token transfers. For off-chain spot prices, balances, or transaction history, use alchemy-api. For non-CCIP bridges, use lifi."

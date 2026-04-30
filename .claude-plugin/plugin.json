@@ -1,6 +1,7 @@
 {
   "name": "alchemy",
   "skills": [
-    "./skills/ecosystem/allium"
+    "./skills/ecosystem/allium",
+    "./skills/ecosystem/chainlink"
   ]
 }
