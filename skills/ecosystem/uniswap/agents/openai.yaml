@@ -1,0 +1,4 @@
+interface:
+  display_name: "Uniswap"
+  short_description: "Swap routing on Uniswap V2 / V3 / V4 + UniswapX, plus deep-link planning"
+  default_prompt: "Use Uniswap to swap tokens on V2/V3/V4 or UniswapX, check approvals, or generate a deep-link to the Uniswap interface. For cross-chain bridges, use lifi instead. For prices, balances, or transaction history, use alchemy-api."
