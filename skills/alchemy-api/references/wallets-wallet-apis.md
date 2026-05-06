@@ -8,7 +8,7 @@ tags:
 related:
   - wallets-account-kit.md
   - operational-auth-and-keys.md
-updated: 2026-04-22
+updated: 2026-05-06
 ---
 # Wallet APIs
 
@@ -19,6 +19,20 @@ High-level wallet APIs enable programmatic wallet operations such as signing, tr
 - Server-side transaction preparation.
 - Delegated signing or session-based flows (including existing session keys — see [Legacy session keys with Wallet APIs](https://www.alchemy.com/docs/wallets/smart-wallets/session-keys/legacy-session-keys) for migrating pre-existing session-key setups).
 - EIP-7702 account delegation and undelegation.
+
+## Account Types (`wallet_requestAccount`)
+Pass `accountType` inside `creationHint` to select which account `wallet_requestAccount` returns. Default is `"sma-b"` (Modular Account v2). Legacy types are enabled for everyone — no support ticket needed.
+
+| `accountType` | Account | Use when |
+|---|---|---|
+| `"sma-b"` | Modular Account v2 (MAv2) | Default. New SCA integrations. Single owner. |
+| `"7702"` | Smart EOA (EIP-7702 MAv2) | Delegating an existing EOA. Default for EIP-7702 mode in the SDK. |
+| `"la-v2"` | Light Account v2 | Backwards compat with existing v2 deployments. Single owner. |
+| `"la-v2-multi-owner"` | Light Account v2 (Multi-Owner) | Backwards compat. Requires `initialOwners` array in `creationHint`. |
+| `"ma-v1-multi-owner"` | Modular Account v1 (Multi-Owner) | Backwards compat with v1 multi-owner deployments. |
+| `"la-v1.1.0"` / `"la-v1.0.2"` / `"la-v1.0.1"` | Light Account v1.x | Backwards compat with specific v1 versions. |
+
+**Routing logic for migrations:** if a customer is on a non-MAv2 account type (Light Account, MAv1) and asks how to keep using it via Wallet APIs, the answer is to pass the matching `accountType` value when calling `wallet_requestAccount` — not to enable it via support. Wallet APIs is no longer "MAv2 only."
 
 ## EIP-7702 Undelegation
 Undelegation removes smart contract delegation from an EIP-7702 account by delegating to the zero address (`0x0000...0000`), restoring it to a plain EOA. Key details:

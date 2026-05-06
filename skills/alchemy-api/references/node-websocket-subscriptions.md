@@ -1,7 +1,7 @@
 ---
 id: references/node-websocket-subscriptions.md
-name: 'WebSocket Subscriptions'
-description: 'Use WebSockets for real-time blockchain events without polling. Best for pending transactions, new blocks, and logs.'
+name: 'WebSocket Subscriptions (EVM)'
+description: 'EVM WebSocket subscriptions via `eth_subscribe`. Use for real-time pending transactions, new blocks, and logs without polling. For Solana PubSub, see `solana-websocket-subscriptions.md`.'
 tags:
   - alchemy
   - node-apis
@@ -10,13 +10,16 @@ tags:
 related:
   - node-json-rpc.md
   - webhooks-details.md
-updated: 2026-04-22
+  - solana-websocket-subscriptions.md
+updated: 2026-05-06
 ---
-# WebSocket Subscriptions
+# WebSocket Subscriptions (EVM)
 
-Real-time blockchain events via WebSocket. No polling required.
+Real-time blockchain events via WebSocket on EVM chains. No polling required.
 
 **Base URL**: `wss://<network>.g.alchemy.com/v2/$ALCHEMY_API_KEY`
+
+> **Solana?** Solana uses a separate PubSub WebSocket protocol with native `*Subscribe` / `*Unsubscribe` methods (no `eth_subscribe`). See `solana-websocket-subscriptions.md`.
 
 ## Billing & Scope Guidance
 Alchemy bills WebSocket subscriptions on the bandwidth they deliver, so broad streams can scale compute unit usage quickly. Keep subscriptions narrow by default:
@@ -206,5 +209,6 @@ ws.on("message", (data) => {
 - If WebSockets are unavailable, fall back to HTTP polling with coarse intervals and backoff.
 
 ## Official Docs
-- [Subscription API Overview](https://www.alchemy.com/docs/reference/subscription-api)
+- [Subscription API Overview](https://www.alchemy.com/docs/reference/subscription-api) (covers EVM chains and links to Solana)
 - [eth_subscribe](https://www.alchemy.com/docs/chains/ethereum/ethereum-api-endpoints/eth-subscribe)
+- [Solana Subscription API Endpoints](https://www.alchemy.com/docs/reference/solana-subscription-api-endpoints) — Solana PubSub is documented separately
