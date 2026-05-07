@@ -1,0 +1,4 @@
+interface:
+  display_name: "MoonPay"
+  short_description: "Fiat on/off-ramps, crypto deposit links, and Solana Pay commerce via MoonPay"
+  default_prompt: "Use MoonPay to buy crypto with fiat, set up a USD/EUR ↔ stablecoin virtual account (KYC + bank), accept crypto payments via auto-converting deposit links, or pay on Solana Pay Shopify stores. For token swaps, balances, or prices, use alchemy-api or lifi instead."
