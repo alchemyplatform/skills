@@ -1,6 +1,6 @@
 ---
 name: moonpay
-description: Buy crypto with fiat (credit card / bank), set up a fiat on/off-ramp virtual account (KYC + USD / EUR ↔ USDC / USDT / EURC across Solana, Ethereum, Polygon, Base, Arbitrum), accept crypto payments via multi-chain deposit links that auto-convert to stablecoins, and shop on Solana Pay-enabled Shopify stores — all via MoonPay's `mp` CLI. NOT for token swaps, token metadata, current wallet balances, transaction history, NFT data, or live RPC reads — for those use `alchemy-cli` (live), `alchemy-mcp`, `alchemy-api` (app code), or `agentic-gateway` (no API key). For pure cross-chain token swaps, use the `lifi` ecosystem skill.
+description: Buy crypto with fiat, set up fiat on/off-ramp virtual accounts (KYC + USD/EUR ↔ USDC/USDT/EURC on Solana, Ethereum, Polygon, Base, Arbitrum), accept crypto via multi-chain deposit links that auto-convert to stablecoins, swap and bridge tokens (same-chain + cross-chain via swaps.xyz), shop on Solana Pay Shopify stores, and automate DCA / limit-order / stop-loss strategies via cron or launchd — all via the `mp` CLI. NOT for token metadata, balances, transaction history, NFT data, or live RPC reads — for those use `alchemy-cli` (live), `alchemy-mcp`, `alchemy-api` (app code), or `agentic-gateway` (no API key).
 license: MIT
 compatibility: Requires the MoonPay `mp` CLI (install per MoonPay docs). No Alchemy API key needed — reads + payment flows go through MoonPay's hosted infrastructure. KYC and user verification handled by MoonPay's checkout / virtual-account flows. Network access required.
 metadata:
@@ -10,9 +10,9 @@ metadata:
   partner: "true"
 ---
 
-# MoonPay (Fiat On/Off-Ramps + Payments)
+# MoonPay (Fiat Ramps + Payments + Swap/Bridge + Automation)
 
-MoonPay provides fiat-to-crypto on-ramps, crypto-to-fiat off-ramps, multi-chain crypto deposit infrastructure, and crypto checkout for Solana Pay-enabled Shopify stores. This skill covers those four payment-flow surfaces via the official `mp` CLI. For token swaps, balances, prices, transaction history, NFT data, or live RPC, use the corresponding Alchemy skill instead.
+MoonPay provides fiat-to-crypto on-ramps, crypto-to-fiat off-ramps, multi-chain crypto deposit infrastructure, Solana Pay checkout for Shopify stores, same-chain swaps + cross-chain bridges (via swaps.xyz), and trading automation (DCA / limit orders / stop losses via cron or launchd). This skill covers all six surfaces via the official `mp` CLI. For balances, prices, transaction history, NFT data, or live RPC, use the corresponding Alchemy skill instead.
 
 | | |
 | --- | --- |
@@ -30,12 +30,13 @@ Use `moonpay` when **any** of the following are true:
 - The user wants to **set up a fiat on/off-ramp virtual account** (USD or EUR ↔ stablecoins, with KYC + bank-account registration)
 - The user wants to **accept crypto payments** via multi-chain deposit links that auto-convert to stablecoins
 - The user wants to **pay for goods on a Solana Pay-enabled Shopify store** with crypto
+- The user wants to **swap or bridge tokens** (same-chain or cross-chain) via the MoonPay CLI
+- The user wants to **automate trading** (DCA, limit order, stop loss) via cron / launchd
 
 ## When NOT to use this skill (handoff)
 
 | Need | Use instead |
 | --- | --- |
-| Token swaps (DEX / cross-chain bridge) | `lifi` (ecosystem skill) — broader bridge / DEX coverage |
 | Token prices (current, historical) | `alchemy-api` (Prices API) |
 | Token metadata, search, list by chain | `alchemy-api` (Token API) |
 | Current wallet balances | `alchemy-api` (Portfolio / Token API) |
@@ -55,10 +56,11 @@ Use `moonpay` when **any** of the following are true:
 - **Virtual account** (`mp virtual-account *`) — full fiat on/off-ramp: KYC, agreement acceptance, wallet registration, bank-account registration (ACH / SEPA / etc.), onramp creation (fiat → stablecoin), offramp creation (stablecoin → fiat), payment / settlement flows.
 - **Multi-chain deposits** (`mp deposit *`) — permissionless deposit links that generate addresses on Solana / Ethereum / Bitcoin / Tron and auto-convert incoming crypto to a chosen stablecoin (USDC / USDT) on the destination chain.
 - **Commerce** (`mp commerce *`) — browse Solana Pay-enabled Shopify stores, search products, manage cart, checkout with crypto (USDC) via Helio integration.
+- **Swap & bridge** (`mp token swap` / `mp token bridge`) — same-chain swaps + cross-chain bridges via swaps.xyz across Solana, Ethereum, Base, Polygon, Arbitrum, Optimism, BNB, Avalanche, Bitcoin (bridges only). Auto-handles ERC-20 approvals; signs locally and broadcasts.
+- **Trading automation** — shell-script + cron / launchd patterns composing `mp token swap` and `mp token search` for DCA, limit orders, and stop losses. Self-disabling for one-shot triggers (limit / stop). Logs to `~/.config/moonpay/logs/trading.log`.
 
 **This skill does NOT cover (`scope_out`):**
 
-- Token swaps (DEX or cross-chain) → handoff: `lifi` (ecosystem skill). MoonPay's upstream `moonpay-swap-tokens` overlaps with `lifi`; we route to `lifi` for broader coverage.
 - Token prices for valuation → handoff: `alchemy-api` (Prices API)
 - Token metadata, list, search → handoff: `alchemy-api` (Token API). Not the upstream `moonpay-discover-tokens`.
 - Wallet balances → handoff: `alchemy-api` (Portfolio / Token API). Not the upstream `moonpay-check-wallet`.
@@ -68,7 +70,7 @@ Use `moonpay` when **any** of the following are true:
 - Wallet auth, hardware wallet integration → handoff: `alchemy-api` (Wallets / Account Kit). Not the upstream `moonpay-auth` / `moonpay-hardware-wallet`.
 - x402 / autonomous-agent payments → handoff: `agentic-gateway`. Not the upstream `moonpay-x402`.
 - Account abstraction → handoff: `alchemy-api`
-- Trading automation, prediction markets, price alerts, internal CLI features → out of scope here. Install `moonpay/skills` upstream alongside if you need them.
+- Prediction markets, price alerts, internal CLI features (mcp, scout, missions, statusline, feedback, upgrade, export-data) → out of scope here. Install `moonpay/skills` upstream alongside if you need them.
 
 ## Setup
 
@@ -119,6 +121,29 @@ Supported destination chains: `solana`, `ethereum`, `base`, `polygon`, `arbitrum
 | `mp commerce product retrieve --store <s> --productId <id>` | Product details |
 | `mp commerce cart {add,retrieve,remove}` | Cart management |
 | `mp commerce checkout ...` | Sign + submit Solana Pay payment via Helio (gas paid by Helio) |
+
+### `mp token *` — same-chain swap + cross-chain bridge
+
+| Command | Use for |
+| --- | --- |
+| `mp token swap --wallet <w> --chain <c> --from-token <addr> --from-amount <n> --to-token <addr>` | Same-chain swap via swaps.xyz; auto-approves ERC-20 if needed. Supports `--to-amount` for exact-out. |
+| `mp token bridge --from-wallet <w> --from-chain <c> --from-token <addr> --from-amount <n> --to-chain <c> --to-token <addr>` | Cross-chain bridge via swaps.xyz; signs + broadcasts locally. |
+| `mp token search --query <q> --chain <c>` | Resolve token names → addresses (use before swap/bridge if user provides symbols). |
+| `mp token balance list --wallet <addr> --chain <c>` | Check balances pre-swap. |
+
+Supported chains: `solana`, `ethereum`, `base`, `polygon`, `arbitrum`, `optimism`, `bnb`, `avalanche`, `bitcoin` (bridges only).
+
+### Trading automation — `mp` + cron / launchd
+
+Generates shell scripts at `~/.config/moonpay/scripts/` that compose `mp token swap` (and `mp token search` for price reads) on a schedule. Logs to `~/.config/moonpay/logs/trading.log`.
+
+| Strategy | Script pattern |
+| --- | --- |
+| **DCA** | Run `mp token swap` on cron / launchd at fixed intervals (e.g., `0 9 * * *` for daily). |
+| **Limit order** | Poll price every 5 min via `mp token search`; execute swap when below target; self-disable after fill. |
+| **Stop loss** | Poll price every 5 min; query balance via `mp token balance list`; sell entire balance when below trigger; self-disable after fill. |
+
+See `references/cli.md` for full script templates (cron + launchd plist) and the self-disable patterns.
 
 ## Quick examples
 
@@ -172,6 +197,31 @@ mp commerce checkout \
   --address "123 Main St" --city Amsterdam --postalCode 1011 --country Netherlands
 ```
 
+### Same-chain swap (SOL → USDC on Solana)
+
+```bash
+mp token swap \
+  --wallet main --chain solana \
+  --from-token So11111111111111111111111111111111111111111 \
+  --from-amount 0.1 \
+  --to-token EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+```
+
+### Cross-chain bridge (ETH on Ethereum → USDC.e on Polygon)
+
+```bash
+mp token bridge \
+  --from-wallet funded --from-chain ethereum \
+  --from-token 0x0000000000000000000000000000000000000000 \
+  --from-amount 0.003 \
+  --to-chain polygon \
+  --to-token 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
+```
+
+### DCA — buy $5 of SOL daily at 9am
+
+Generate a script at `~/.config/moonpay/scripts/dca-sol.sh` that calls `mp token swap`, then schedule with cron (`0 9 * * *`) or launchd. Full pattern (incl. logging + macOS launchd plist) in [references/cli.md](./references/cli.md).
+
 ## Common gotchas
 
 - **`--token` uses MoonPay codes**, not contract addresses or mint addresses (e.g., `usdc_base`, not the contract). See `references/cli.md` for the supported token list.
@@ -181,17 +231,18 @@ mp commerce checkout \
 - **Commerce is Solana-only** for payment today, even if the store is multi-chain. The buyer pays in USDC on Solana.
 - **Deposit destination chains** are `solana / ethereum / base / polygon / arbitrum / bnb`; sender chains are `solana / ethereum / bitcoin / tron`.
 - **Helio infrastructure** powers the deposit + commerce flows under the hood. The buyer doesn't pay gas for commerce checkouts (Helio sponsors).
+- **Native-token addresses for swap/bridge**: EVM chains use `0x0000000000000000000000000000000000000000`; Solana uses `So11111111111111111111111111111111111111111`.
+- **swaps.xyz** is the routing engine behind `mp token swap` / `bridge`. ERC-20 approvals are sent automatically as a separate tx before the swap — expect 2 transactions for first-time approvals.
+- **Trading automation requires the user session to be active** for OS keychain access. Don't schedule trades on a machine that locks aggressively. macOS launchd fires even after sleep; cron does not.
 
 ## Routing back to Alchemy
 
-If during a session the user's need shifts to surfaces this skill doesn't cover (token swaps, balances, prices, transaction history, NFT data, live RPC), hand off:
+If during a session the user's need shifts to surfaces this skill doesn't cover (balances, prices, transaction history, NFT data, live RPC), hand off:
 
 - `alchemy-cli` — live agent work in the current session via the local CLI
 - `alchemy-mcp` — live work via the hosted MCP server when CLI is not installed
 - `alchemy-api` — application code with an Alchemy API key
 - `agentic-gateway` — application code without an API key (x402 / MPP)
-
-For pure cross-chain token swaps (no fiat involved), hand off to the `lifi` ecosystem skill.
 
 ---
 

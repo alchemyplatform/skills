@@ -227,14 +227,255 @@ mp commerce checkout \
 
 ---
 
+## `mp token *` — same-chain swap + cross-chain bridge
+
+Same-chain swaps and cross-chain bridges via [swaps.xyz](https://swaps.xyz). Builds the unsigned tx, handles ERC-20 approvals, signs locally, broadcasts.
+
+### Same-chain swap
+
+```bash
+mp token swap \
+  --wallet <wallet-name> \
+  --chain <chain> \
+  --from-token <token-address> \
+  --from-amount <amount> \
+  --to-token <token-address>
+```
+
+Use `--to-amount` instead of `--from-amount` for exact-output swaps.
+
+### Cross-chain bridge
+
+```bash
+mp token bridge \
+  --from-wallet <wallet-name> \
+  --from-chain <chain> \
+  --from-token <token-address> \
+  --from-amount <amount> \
+  --to-chain <chain> \
+  --to-token <token-address> \
+  --to-wallet <wallet-name>     # optional; defaults to from-wallet
+```
+
+Same `--to-amount` exact-out support.
+
+### Examples
+
+```bash
+# SOL → USDC on Solana
+mp token swap \
+  --wallet main --chain solana \
+  --from-token So11111111111111111111111111111111111111111 \
+  --from-amount 0.1 \
+  --to-token EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+
+# ETH on Ethereum → USDC.e on Polygon (cross-chain)
+mp token bridge \
+  --from-wallet funded --from-chain ethereum \
+  --from-token 0x0000000000000000000000000000000000000000 \
+  --from-amount 0.003 \
+  --to-chain polygon \
+  --to-token 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174
+
+# ERC-20 swap (auto-approves first time)
+mp token swap \
+  --wallet funded --chain polygon \
+  --from-token 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174 \
+  --from-amount 5 \
+  --to-token 0x0000000000000000000000000000000000000000
+```
+
+### Supported chains
+
+`solana`, `ethereum`, `base`, `polygon`, `arbitrum`, `optimism`, `bnb`, `avalanche`, `bitcoin` (bridges only).
+
+### Helpers
+
+```bash
+# Resolve names → addresses
+mp token search --query "USDC" --chain solana
+
+# Check balances pre-swap
+mp token balance list --wallet <address> --chain <chain>
+```
+
+### Native-token addresses
+
+- EVM chains: `0x0000000000000000000000000000000000000000`
+- Solana: `So11111111111111111111111111111111111111111`
+
+`token swap` calls `token bridge` under the hood with `from-chain == to-chain`.
+
+---
+
+## Trading automation — `mp` + cron / launchd
+
+Compose the `mp` CLI with OS scheduling to run unattended trading strategies: dollar-cost averaging, limit orders, and stop losses. The skill generates shell scripts at `~/.config/moonpay/scripts/` and schedules them — no separate tooling needed.
+
+### Prerequisites
+
+```bash
+mp user retrieve                                      # authenticated
+mp token balance list --wallet <name> --chain <chain> # funded
+which mp                                              # absolute path for cron / launchd
+which jq                                              # JSON parsing
+```
+
+### Base script pattern
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+MP="$(which mp)"  # absolute path; cron / launchd have minimal PATH
+LOG="$HOME/.config/moonpay/logs/trading.log"
+mkdir -p "$(dirname "$LOG")"
+
+log() { echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] $*" >> "$LOG"; }
+
+# --- Config (agent fills these in per strategy) ---
+WALLET="main"
+CHAIN="solana"
+FROM_TOKEN="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"  # USDC
+TO_TOKEN="So11111111111111111111111111111111111111111"     # SOL
+AMOUNT=5
+
+# --- Execute ---
+log "SWAP: $AMOUNT $FROM_TOKEN -> $TO_TOKEN on $CHAIN"
+RESULT=$("$MP" --json token swap \
+  --wallet "$WALLET" --chain "$CHAIN" \
+  --from-token "$FROM_TOKEN" --from-amount "$AMOUNT" \
+  --to-token "$TO_TOKEN" 2>&1) || {
+  log "FAILED: $RESULT"
+  exit 1
+}
+log "OK: $RESULT"
+```
+
+`mp --json` outputs single-line JSON for `jq` parsing.
+
+### DCA (dollar-cost averaging)
+
+> "Buy $5 of SOL every day at 9am UTC"
+
+Use the base script as-is. Schedule:
+
+```bash
+# Linux (crontab)
+(crontab -l 2>/dev/null; \
+ echo '0 9 * * * ~/.config/moonpay/scripts/dca-sol.sh # moonpay:dca-sol') | crontab -
+
+# Common cron intervals:
+#   0 * * * *      hourly
+#   0 */4 * * *    every 4 hours
+#   0 9 * * *      daily at 9am
+#   0 9 * * 1      weekly Monday 9am
+```
+
+```xml
+<!-- macOS launchd: ~/Library/LaunchAgents/com.moonpay.dca-sol.plist -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.moonpay.dca-sol</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/USERNAME/.config/moonpay/scripts/dca-sol.sh</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer></dict>
+  <key>StandardErrorPath</key>
+  <string>/Users/USERNAME/.config/moonpay/logs/dca-sol.err</string>
+</dict>
+</plist>
+```
+
+Load: `launchctl load ~/Library/LaunchAgents/com.moonpay.dca-sol.plist`. Tilde does **not** expand in plists — use `echo $HOME` for the absolute path.
+
+### Limit order
+
+> "Buy $50 of SOL when price drops below $80"
+
+Pattern: poll price every 5 min; execute swap when condition met; self-disable after fill.
+
+```bash
+# Inside the base script, replace the Execute block with:
+PRICE=$("$MP" --json token search --query "$TOKEN" --chain "$CHAIN" \
+  | jq -r '.items[0].marketData.price')
+
+if [ -z "$PRICE" ] || [ "$PRICE" = "null" ]; then
+  log "LIMIT: price fetch failed, skipping"
+  exit 0
+fi
+
+if (( $(echo "$PRICE < $TARGET_PRICE" | bc -l) )); then
+  log "LIMIT: price $PRICE < $TARGET_PRICE — executing buy"
+  RESULT=$("$MP" --json token swap \
+    --wallet "$WALLET" --chain "$CHAIN" \
+    --from-token "$BUY_WITH" --from-amount "$BUY_AMOUNT" \
+    --to-token "$TOKEN" 2>&1) || { log "FAILED: $RESULT"; exit 1; }
+  log "OK: bought at $PRICE"
+
+  # Self-disable after fill
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    launchctl unload "$HOME/Library/LaunchAgents/com.moonpay.${SCRIPT_NAME}.plist" 2>/dev/null || true
+  else
+    crontab -l | grep -v "$SCRIPT_NAME" | crontab -
+  fi
+else
+  log "LIMIT: price $PRICE >= $TARGET_PRICE — waiting"
+fi
+```
+
+Schedule every 5 min:
+- cron: `*/5 * * * * ~/.config/moonpay/scripts/limit-buy-sol.sh # moonpay:limit-buy-sol`
+- launchd: `<key>StartInterval</key><integer>300</integer>` instead of `StartCalendarInterval`
+
+### Stop loss
+
+Same structure as limit order, but:
+- Trigger when `price < trigger_price`
+- Sell entire balance: query via `mp token balance list`, then `mp token swap` from sell-token to a stablecoin
+- Self-disable after fill
+
+### Managing automations
+
+```bash
+# List active
+launchctl list | grep moonpay      # macOS
+crontab -l | grep moonpay          # Linux
+
+# Remove
+launchctl unload ~/Library/LaunchAgents/com.moonpay.dca-sol.plist
+rm ~/Library/LaunchAgents/com.moonpay.dca-sol.plist
+crontab -l | grep -v "moonpay:dca-sol" | crontab -
+
+# Pause / resume (macOS)
+launchctl unload ~/Library/LaunchAgents/com.moonpay.dca-sol.plist
+launchctl load ~/Library/LaunchAgents/com.moonpay.dca-sol.plist
+
+# Logs
+tail -50 ~/.config/moonpay/logs/trading.log
+```
+
+### Tips
+
+- Start with a small DCA amount before scaling up.
+- Keychain access requires an active user session — don't schedule on a machine that auto-locks aggressively.
+- macOS launchd fires even after sleep; cron does not.
+- Always tag cron entries with `# moonpay:{name}` so they're easy to find / remove.
+- Use `bc -l` for decimal price comparison; bash can't compare floats natively. If `bc` isn't available: `awk "BEGIN {exit !($PRICE < $TARGET)}"`.
+
+---
+
 ## Out of scope here (use upstream `moonpay/skills` directly if you need them)
 
-The upstream `moonpay/skills` repo includes ~30+ skills. The non-overlapping subset we mirror is the four CLI surfaces above. The rest are out of scope for this curated skill because they overlap with Alchemy first-party or other ecosystem skills:
+The upstream `moonpay/skills` repo includes ~30+ skills. We mirror six surfaces above (buy, virtual-account, deposit, commerce, swap/bridge, trading-automation). The rest are out of scope for this curated skill because they overlap with Alchemy first-party or are niche / internal:
 
 | Upstream skill | Why scope_out | Use |
 | --- | --- | --- |
-| `moonpay-swap-tokens` | Overlaps with `lifi` (broader DEX + bridge coverage) | `lifi` ecosystem skill |
-| `moonpay-trading-automation` | Overlaps with multiple swap / trading surfaces | `lifi` + `alchemy-api` |
 | `moonpay-auth` | Overlaps with Alchemy Wallets / Account Kit | `alchemy-api` |
 | `moonpay-x402` | Overlaps with our `agentic-gateway` (already does x402) | `agentic-gateway` |
 | `moonpay-discover-tokens` | Partial overlap with Token API | `alchemy-api` (Token API) |
