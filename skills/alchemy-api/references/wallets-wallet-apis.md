@@ -8,7 +8,7 @@ tags:
 related:
   - wallets-account-kit.md
   - operational-auth-and-keys.md
-updated: 2026-04-22
+updated: 2026-05-13
 ---
 # Wallet APIs
 
@@ -30,6 +30,14 @@ Undelegation removes smart contract delegation from an EIP-7702 account by deleg
 ## Integration Notes
 - Prefer client-side signing for user security.
 - Use server-side APIs only with strong access controls.
+
+## Tracking Sends: Call ID, Not Transaction Hash
+Wallet API sends (`sendCalls`, `sendPreparedCalls`) return a **call ID**, not a transaction hash. Use the call ID as the canonical reference for any single send, both for status polling and for surfacing to end users.
+
+- Poll status via `waitForCallsStatus({ id })` or `getCallsStatus({ id })`. Both return a `CallStatus` object with `id`, `status` (`"pending"`, `"success"`, `"failure"`), `chainId`, `atomic`, and `receipts[]`.
+- A single call ID can correspond to multiple receipts (one per inner transaction on non-atomic chains) or to zero receipts (if the call has not yet been included). Do NOT assume `receipts[0].transactionHash` is always populated.
+- Block explorers index by transaction hash, so once a call confirms you can dig into `status.receipts[].transactionHash` for an explorer link, but the call ID is what the Wallet API itself accepts as a lookup key.
+- This is the pattern surfaced in the v5 SDK quickstarts and recipes — log the call ID, log the status, and only follow up with `transactionHash` if you specifically need an explorer URL.
 
 ## Common Errors & Troubleshooting
 When users report Wallet API failures, check for these common error patterns:

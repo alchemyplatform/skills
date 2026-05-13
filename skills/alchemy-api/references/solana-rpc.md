@@ -9,7 +9,7 @@ tags:
 related:
   - solana-das-api.md
   - solana-wallets.md
-updated: 2026-02-23
+updated: 2026-05-13
 ---
 # Solana JSON-RPC
 
@@ -230,6 +230,36 @@ curl -s -X POST https://solana-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
 | `meta.postTokenBalances` | array | Post-execution token balances |
 | `meta.logMessages` | string[] | Program log messages |
 | `meta.err` | object | Error (null on success) |
+
+---
+
+## `getTransactionsForAddress`
+
+Returns confirmed transactions for an address with richer filtering than `getSignaturesForAddress`. Use this when you need the full transaction objects (not just signatures) and want to filter by status, slot range, block time, or token accounts in one call.
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `address` | string | Yes | — | Base58 public key |
+| `config.transactionDetails` | string | No | `"signatures"` | `"signatures"` returns just signatures; `"full"` returns full transactions |
+| `config.sortOrder` | string | No | `"desc"` | `"asc"` (oldest first) or `"desc"` (newest first) |
+| `config.limit` | integer | No | `1000` | Max results (max 1000) |
+| `config.paginationToken` | string | No | — | Cursor from a prior response |
+| `config.before` | string | No | — | Return results before this signature |
+| `config.until` | string | No | — | Return results until this signature |
+| `config.encoding` | string | No | `"json"` | `"json"`, `"jsonParsed"`, `"base64"` (only when `transactionDetails: "full"`) |
+| `config.maxSupportedTransactionVersion` | integer | No | — | Set to `0` for versioned transactions |
+| `config.filters.status` | string | No | — | `"any"`, `"succeeded"`, or `"failed"` |
+| `config.filters.slot` | object | No | — | `{ gte, lte }` range filter on slot number |
+| `config.filters.blockTime` | object | No | — | `{ gte, lte }` range filter on Unix timestamp |
+| `config.filters.tokenAccounts` | string[] | No | — | Only return transactions touching these token accounts |
+
+### Response
+
+Returns `{ data, paginationToken }`. `data` is an array of signature objects (default) or full transaction objects (when `transactionDetails: "full"`). `paginationToken` is `null` when no more pages are available.
+
+Prefer `getTransactionsForAddress` over `getSignaturesForAddress` + per-signature `getTransaction` calls when you need full transactions for an address — it's a single call instead of N+1.
 
 ---
 

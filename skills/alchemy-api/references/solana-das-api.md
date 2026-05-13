@@ -7,7 +7,7 @@ tags:
   - solana
 related:
   - solana-rpc.md
-updated: 2026-02-23
+updated: 2026-05-13
 ---
 # Solana DAS (Digital Asset Standard) API
 
@@ -231,19 +231,27 @@ Same structure as `getAssetsByOwner` (`total`, `limit`, `page`, `items`).
 
 ## `searchAssets`
 
-Search assets by various criteria.
+Search assets by various criteria. `ownerAddress` is required by the Alchemy DAS proxy on every call (even when other filters are also supplied).
 
 ### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `ownerAddress` | string | No | Filter by owner |
-| `grouping` | array | No | Filter by group (e.g., `[{ "group_key": "collection", "group_value": "..." }]`) |
-| `burnt` | boolean | No | Filter by burn status |
-| `frozen` | boolean | No | Filter by frozen status |
-| `interface` | string | No | Filter by interface type |
-| `page` | integer | No | Page number |
-| `limit` | integer | No | Results per page |
+| `ownerAddress` | string | **Yes** | Owner wallet pubkey. Required on every call. |
+| `tokenType` | string | No | `"fungible"`, `"nonFungible"`, `"regularNFT"`, `"compressedNFT"`, or `"all"`. Prefer over `interface` — they are mutually exclusive server-side. Note: values are case-sensitive (`NFT` uppercase). |
+| `interface` | string | No | Legacy filter. Mutually exclusive with `tokenType`. |
+| `sortBy` | object | No | `{ "sortBy": "created"\|"updated"\|"recent_action"\|"id"\|"none", "sortDirection": "asc"\|"desc" }`. Cursor-based pagination (`before`/`after`) requires `sortBy: "id"`. Note: enum values are snake_case. |
+| `limit` | integer | No | Page size, max 1000, default 100. |
+| `page` | integer | No | 1-indexed page number. Switches the server to page-based pagination. |
+| `before`, `after`, `cursor` | string | No | Cursor-based pagination tokens. Mutually exclusive with `page` — pick one strategy. |
+| `negate` | boolean | No | Invert the filter set. Default `false`. |
+| `conditionType` | string | No | `"all"` (default — every filter must match) or `"any"`. |
+| `creatorAddress`, `creatorVerified`, `authorityAddress`, `delegate`, `supplyMint`, `royaltyTarget` | string / boolean | No | Pubkey or boolean filters. Note: server field is `delegate` (not `delegateAddress`). |
+| `frozen`, `burnt`, `compressed`, `compressible` | boolean | No | Status filters. |
+| `royaltyTargetType` | string | No | `"creators"`, `"fanout"`, or `"single"`. |
+| `royaltyAmount` | integer | No | Basis points (0–10000). |
+| `options` / `displayOptions` | object | No | `showUnverifiedCollections`, `showCollectionMetadata`, `showZeroBalance`, `showInscription`, `showFungible`. Server treats `options` and `displayOptions` as aliases — pass only one, not both. |
+| `grouping` | array | No | 2-tuple `["<groupKey>", "<groupValue>"]`, e.g. `["collection", "<collectionAddress>"]`. Not exposed in the Try It form — pass it directly when calling the API yourself. |
 
 ### Request
 
@@ -255,17 +263,63 @@ curl -s -X POST https://solana-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
     "id": 1,
     "method": "searchAssets",
     "params": {
-      "ownerAddress": "83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri",
-      "grouping": [{ "group_key": "collection", "group_value": "J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w" }],
+      "ownerAddress": "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY",
+      "tokenType": "all",
+      "sortBy": { "sortBy": "created", "sortDirection": "asc" },
       "page": 1,
-      "limit": 10
+      "limit": 50
     }
   }'
 ```
 
 ### Response
 
-Same structure as `getAssetsByOwner`.
+Same envelope as `getAssetsByOwner` (`total`, `limit`, `page`, `items`).
+
+### Gotchas
+
+- Phantom fields that previously appeared in the spec but are NOT accepted by the server: `delegateAddress` (use `delegate`), `mutable`, `tree`, `programId`, `commitment`, `minContextSlot`, `dataSlice`, `encoding`.
+- Pagination is mutually exclusive — `page` vs `before`/`after`/`cursor`. Sending more than one returns `Pagination Error. Only one pagination parameter supported per query.`
+- `before`/`after` (cursor pagination) requires `sortBy.sortBy: "id"`; any other sort with cursor pagination yields `Pagination Sorting Error`.
+- `ownerType` + `tokenType` are mutually exclusive. `interface` + `tokenType` are mutually exclusive. Prefer `tokenType` and drop the other.
+
+---
+
+## `getTokenAccounts`
+
+Returns token accounts filtered by owner, mint, or both. At least one of `ownerAddress` or `mintAddress` is required.
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `ownerAddress` | string | Yes (if `mintAddress` not set) | — | Wallet pubkey. Common case: list a wallet's token holdings. |
+| `mintAddress` | string | Yes (if `ownerAddress` not set) | — | Mint pubkey. Pass alongside `ownerAddress` to narrow a wallet's holdings to a specific mint, or alone to list every token account for a mint. |
+| `page` | integer | No | `1` | 1-indexed page number. Use either `page` or cursor pagination, not both. |
+| `limit` | integer | No | `100` | Max accounts per page, up to 1000. |
+| `cursor`, `before`, `after` | string | No | — | Cursor-based pagination tokens. Mutually exclusive with `page`. |
+| `options` / `displayOptions` | object | No | — | `showZeroBalance` to include accounts with zero token balance. `options` and `displayOptions` are aliases — pass only one. |
+
+### Request
+
+```bash
+curl -s -X POST https://solana-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "getTokenAccounts",
+    "params": {
+      "ownerAddress": "86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY",
+      "limit": 100
+    }
+  }'
+```
+
+### Gotchas
+
+- Phantom fields that look like standard Solana RPC but are NOT accepted: `programId`, `commitment`, `minContextSlot`, `dataSlice`, `encoding`. These are part of `getTokenAccountsByOwner` (standard Solana RPC), not DAS `getTokenAccounts`.
+- If neither `ownerAddress` nor `mintAddress` is provided, the server returns `Either 'ownerAddress' or 'mintAddress' must be provided`.
 
 ---
 

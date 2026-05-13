@@ -9,17 +9,20 @@ tags:
 related:
   - node-json-rpc.md
   - solana-rpc.md
-updated: 2026-04-22
+updated: 2026-05-13
 ---
 # Supported Networks
 
 ## Summary
-Alchemy supports multiple EVM and Solana networks. Always verify network availability in the dashboard for each product.
+Alchemy supports multiple EVM, Solana, and UTXO networks. Always verify network availability in the dashboard for each product.
 
 ## Guidance
-- Use chain-specific base URLs (e.g., `eth-mainnet`, `polygon-mainnet`).
+- Use chain-specific base URLs (e.g., `eth-mainnet`, `polygon-mainnet`, `bitcoincash-mainnet`).
 - Use testnets for QA.
 - Not all products are available on every chain.
+
+## Recently Added
+- **Bitcoin Cash, Litecoin, Dogecoin** — added as UTXO JSON-RPC chains alongside Bitcoin. Network slugs: `bitcoincash-mainnet`, `bitcoincash-testnet`, `litecoin-mainnet`, `litecoin-testnet`, `dogecoin-mainnet`. All four share the same Bitcoin-Core-style JSON-RPC method set (`getblock`, `sendrawtransaction`, etc.) and a common UTXO REST API (Trezor Blockbook-derived). The UTXO REST surface is mounted under `https://{network}.g.alchemy.com/v2/{apiKey}/api/v2/...` across all seven UTXO networks (the four new ones plus `bitcoin-mainnet` and `bitcoin-testnet4`).
 
 ## Recently Deprecated / Removed
 - **Arbitrum Nova** — deprecated. Nova endpoints (`arbnova-mainnet`, `ARBNOVA_MAINNET`) are no longer supported across Node, Wallets (Bundler, Gas Manager), and related products. See the [Arbitrum Nova deprecation notice](https://www.alchemy.com/docs/reference/arbitrum-nova/arbitrum-nova-deprecation-notice) for migration guidance.
@@ -113,6 +116,9 @@ berachain-mainnet
 bitcoin-mainnet
 bitcoin-signet
 bitcoin-testnet
+bitcoin-testnet4
+bitcoincash-mainnet
+bitcoincash-testnet
 blast-mainnet
 blast-sepolia
 bnb-mainnet
@@ -135,6 +141,7 @@ crossfi-mainnet
 crossfi-testnet
 degen-mainnet
 degen-sepolia
+dogecoin-mainnet
 earnm-mainnet
 earnm-sepolia
 edge-mainnet
@@ -168,6 +175,8 @@ lens-mainnet
 lens-sepolia
 linea-mainnet
 linea-sepolia
+litecoin-mainnet
+litecoin-testnet
 mantle-mainnet
 mantle-sepolia
 megaeth-mainnet
