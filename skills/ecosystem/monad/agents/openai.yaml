@@ -1,0 +1,4 @@
+interface:
+  display_name: "Monad"
+  short_description: "Build on Monad — concepts, gas, addresses, HyperIndex"
+  default_prompt: "Use the monad ecosystem skill for Monad-specific concepts (async execution, EIP-7702), gas pricing rules (charged on gas_limit), canonical addresses, and HyperIndex event indexing."

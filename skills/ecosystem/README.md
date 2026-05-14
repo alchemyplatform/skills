@@ -40,7 +40,8 @@ When adding a new partner skill, add an entry to `plugin.json` so it gets instal
 
 ## Current partners
 
-- **Allium** — wallet PnL (current + historical, by-wallet and by-token), holdings timeseries, Hyperliquid trading data (info, fills, orders, orderbook), and custom SQL analytics over Allium's data warehouse ([`./skills/allium/`](./skills/allium/)). Curated subset of [allium-labs/skills](https://github.com/allium-labs/skills) — overlapping endpoints (prices, token metadata, current balances, transactions, NFT) are intentionally omitted and routed to first-party Alchemy skills.
+- **Allium** — wallet PnL (current + historical, by-wallet and by-token), holdings timeseries, Hyperliquid trading data (info, fills, orders, orderbook), and custom SQL analytics over Allium's data warehouse ([`./allium/`](./allium/)). Curated subset of [allium-labs/skills](https://github.com/allium-labs/skills) — overlapping endpoints (prices, token metadata, current balances, transactions, NFT) are intentionally omitted and routed to first-party Alchemy skills.
+- **Monad** — building on Monad mainnet/testnet: architecture concepts (async execution, parallel execution, EIP-7702), gas pricing rules (`gas_limit` not `gas_used`), canonical contract addresses, and HyperIndex (Envio Cloud) on-chain event indexing ([`./monad/`](./monad/)). Curated subset of [therealharpaljadeja/monskills](https://github.com/therealharpaljadeja/monskills) — Alchemy's Monad RPC, Account Kit / Bundler / Gas Manager are routed back to first-party `alchemy-*` skills.
 
 ## Routing for agents
 
@@ -52,5 +53,6 @@ When adding a new partner skill, add an entry to `plugin.json` so it gets instal
 | Holdings timeseries history | `allium` |
 | Hyperliquid trading data (fills, orders, positions, orderbook) | `allium` |
 | Custom SQL on a blockchain data warehouse (DeFi, NFT, bridges, MEV, Solana staking) | `allium` |
+| Monad-specific concepts, gas pricing, canonical addresses, HyperIndex event indexing | `monad` |
 
 See each skill's `SKILL.md` for its exact `scope_in` / `scope_out`.
