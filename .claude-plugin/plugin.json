@@ -3,5 +3,6 @@
   "skills": [
     "./skills/ecosystem/allium",
     "./skills/ecosystem/monad"
+    "./skills/ecosystem/opensea"
   ]
 }
