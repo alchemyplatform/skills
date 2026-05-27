@@ -10,7 +10,7 @@ tags:
 related:
   - node-json-rpc.md
   - webhooks-details.md
-updated: 2026-04-22
+updated: 2026-05-27
 ---
 # WebSocket Subscriptions
 
@@ -205,6 +205,15 @@ ws.on("message", (data) => {
 - `newPendingTransactions` is very high volume. Use tight filters if available, or switch to `alchemy_pendingTransactions` with `addresses` and `hashesOnly: true` to keep bandwidth (and billing) predictable.
 - If WebSockets are unavailable, fall back to HTTP polling with coarse intervals and backoff.
 
+## Non-EVM chains
+
+Same WebSocket scheme (`wss://<network>.g.alchemy.com/v2/$ALCHEMY_API_KEY`), different message protocols:
+
+- **Solana subscriptions** (`accountSubscribe`, `programSubscribe`, `logsSubscribe`, `signatureSubscribe`, `slotSubscribe`, `rootSubscribe`) — Solana-specific RPC, different envelope from `eth_subscribe`. See [Solana Subscription API](https://www.alchemy.com/docs/reference/subscription-api).
+- **UTXO chains (Bitcoin / BCH / LTC / DOGE)** — Trezor Blockbook protocol passed through unchanged. JSON envelope is `{ "id", "method", "params" }`. Push subscriptions: `subscribeNewBlock`, `subscribeNewTransaction`, `subscribeAddresses`, `subscribeFiatRates`. Only one active subscription per event type per connection. See the per-chain "UTXO WebSockets" reference page under each Bitcoin-ecosystem chain in the docs.
+  - **`subscribeNewTransaction`** requires Blockbook's `-enablesubnewtx` flag on the backend — may not be enabled everywhere. Fall back to `subscribeAddresses` if you see no events.
+
 ## Official Docs
 - [Subscription API Overview](https://www.alchemy.com/docs/reference/subscription-api)
 - [eth_subscribe](https://www.alchemy.com/docs/chains/ethereum/ethereum-api-endpoints/eth-subscribe)
+- [UTXO WebSockets (Bitcoin)](https://www.alchemy.com/docs/chains/bitcoin/utxo-websockets)
