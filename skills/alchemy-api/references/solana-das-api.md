@@ -7,7 +7,7 @@ tags:
   - solana
 related:
   - solana-rpc.md
-updated: 2026-02-23
+updated: 2026-05-27
 ---
 # Solana DAS (Digital Asset Standard) API
 
@@ -28,9 +28,11 @@ Returns metadata for a single asset by its ID.
 | `id` | string | Yes | Asset ID (mint address, base58) |
 | `displayOptions.showUnverifiedCollections` | boolean | No | Include unverified collections |
 | `displayOptions.showCollectionMetadata` | boolean | No | Include collection metadata |
+| `displayOptions.showZeroBalance` | boolean | No | Include assets with zero balance |
+| `displayOptions.showInscription` | boolean | No | Include inscription details (singular — `showInscriptions` is rejected) |
 | `displayOptions.showFungible` | boolean | No | Include fungible token details |
-| `displayOptions.showNativeBalance` | boolean | No | Include native SOL balance |
-| `displayOptions.showInscriptions` | boolean | No | Include inscription data |
+
+> The server accepts `options` as an alias of `displayOptions`. Send only one — including both returns a `duplicate field` error. `showNativeBalance` and `showGrandTotal` are NOT supported (rejected with `unknown field`).
 
 ### Request
 
@@ -310,6 +312,19 @@ curl -s -X POST https://solana-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
 - Asset grouping fields vary by program and collection structure.
 - Pagination is required for large wallets. Use `page` and `limit`.
 - Compressed assets require `getAssetProof` for on-chain operations.
+
+### Shared `displayOptions` / `options` shaping flags
+The same `DisplayOptions` schema is accepted on `getAsset`, `getAssets`, `getAssetsByOwner`, `getAssetsByAuthority`, `getAssetsByCreator`, `getAssetsByGroup`, and `searchAssets`. All flags are boolean and default to `false`:
+
+| Flag | Effect |
+|------|--------|
+| `showUnverifiedCollections` | Include unverified collections instead of skipping them. |
+| `showCollectionMetadata` | Include collection metadata. |
+| `showZeroBalance` | Include assets with zero balance. |
+| `showInscription` | Include inscription details. Spelled singular — `showInscriptions` (plural) is rejected. |
+| `showFungible` | Include fungible assets in the result. |
+
+The server accepts `options` as an alias of `displayOptions`. Send only one — including both returns a `duplicate field` error. `showNativeBalance` and `showGrandTotal` are NOT supported and return `unknown field`.
 
 ## Official Docs
 - [DAS APIs for Solana](https://www.alchemy.com/docs/chains/solana/das-api)

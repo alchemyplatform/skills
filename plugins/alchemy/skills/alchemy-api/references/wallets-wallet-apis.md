@@ -8,17 +8,43 @@ tags:
 related:
   - wallets-account-kit.md
   - operational-auth-and-keys.md
-updated: 2026-04-22
+updated: 2026-05-27
 ---
 # Wallet APIs
 
 ## Summary
-High-level wallet APIs enable programmatic wallet operations such as signing, transaction preparation, account management, and EIP-7702 delegation/undelegation. This guide stays minimal and focuses on integration awareness.
+High-level wallet APIs (Wallet APIs **v5**, GA) enable programmatic wallet operations: signing, transaction preparation, account management, EIP-7702 delegation/undelegation, and (new in v5) Solana transactions. This is the recommended stack for new builds; Account Kit v4 stays for signer-only flows. See `wallets-account-kit.md` for v4 vs v5 routing.
 
 ## Primary Use Cases
-- Server-side transaction preparation.
+- Server-side transaction preparation (EVM and Solana).
 - Delegated signing or session-based flows (including existing session keys — see [Legacy session keys with Wallet APIs](https://www.alchemy.com/docs/wallets/smart-wallets/session-keys/legacy-session-keys) for migrating pre-existing session-key setups).
 - EIP-7702 account delegation and undelegation.
+- Cross-chain swaps and ERC-20 gas payments via `wallet_prepareCalls` capabilities.
+
+## v5 SDK package surface
+The v5 stack lives under the `@alchemy/*` scope. Common imports:
+
+| Package | Use |
+|---|---|
+| `@alchemy/wallet-apis` | High-level client SDK (`createWalletClient`, `prepareCalls`, `sendPreparedCalls`). |
+| `@alchemy/smart-accounts` | MAv2 / Light Account / smart contract account factories. |
+| `@alchemy/aa-infra` | Low-level bundler client; replaces `@account-kit/infra`. |
+| `viem` | Underlying chain primitives (`parseEther`, `parseUnits`, `bigint` helpers). |
+
+## Solana support
+`wallet_prepareCalls` and `wallet_sendPreparedCalls` accept Solana payloads alongside EVM via an `anyOf` schema:
+
+- `chainId` uses CAIP-2 form: `"solana:mainnet"` (mainnet) or `"solana:devnet"` (devnet).
+- `from` is a base58-encoded Solana address (32–44 chars), not a `0x` hex string.
+- The prepared transaction is returned with `type: "solana-transaction-v0"` (Solana v0 versioned transaction). EVM responses still use `type: "user-operation-v0.7"` etc.
+- Sign the returned tx with the user's Solana keypair, then submit it back through `wallet_sendPreparedCalls`.
+- Request shape: a single positional object with `calls` (EVM) **or** `instructions` (Solana, an array of raw Solana instructions); the call's `to`/`from`/encoding fields and the response shape are gated on whether you sent EVM or Solana inputs.
+
+## Encoding: bigint vs hex
+- **Client SDK (`@alchemy/wallet-apis` v5)**: takes `bigint` for amount fields like `fromAmount`, `minimumToAmount`, `value`. Use viem helpers: `parseEther("1.5")`, `parseUnits("100", 6)`.
+- **Raw JSON-RPC**: amounts and gas fields are `0x`-prefixed hex strings (e.g., `"value": "0x16345785d8a0000"`).
+
+If you see `expected bigint, got string`, you're passing a hex string to the SDK — convert via `BigInt(hex)` or use viem helpers.
 
 ## EIP-7702 Undelegation
 Undelegation removes smart contract delegation from an EIP-7702 account by delegating to the zero address (`0x0000...0000`), restoring it to a plain EOA. Key details:
@@ -54,7 +80,9 @@ When users report Wallet API failures, check for these common error patterns:
 **Key pattern:** Most `precheck failed` errors (-32000) resolve by re-preparing the call immediately before sending — minimize delay between `wallet_prepareCalls` and `wallet_sendPreparedCalls`.
 
 ## Related Files
-- `wallets-account-kit.md`
+- `wallets-account-kit.md` (v4 vs v5 routing)
+- `wallets-solana-notes.md`
+- `wallets-gas-manager.md`
 - `operational-auth-and-keys.md`
 
 ## Official Docs
@@ -62,3 +90,4 @@ When users report Wallet API failures, check for these common error patterns:
 - [Wallet API Errors](https://www.alchemy.com/docs/wallets/troubleshooting/wallet-apis-errors)
 - [Legacy session keys with Wallet APIs](https://www.alchemy.com/docs/wallets/smart-wallets/session-keys/legacy-session-keys) — use existing session keys with Wallet APIs.
 - [v5 migration guide](https://www.alchemy.com/docs/wallets/resources/migration-v5)
+- [Swap Tokens (v5)](https://www.alchemy.com/docs/wallets/transactions/swap-tokens) — bigint amount conventions for the client SDK.
