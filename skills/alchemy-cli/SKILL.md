@@ -46,6 +46,18 @@ Run this at the start of any session to get the full command contract (every com
 alchemy --json --no-interactive agent-prompt
 ```
 
+For wallet-scoped agent work, use the narrower contract that lists only wallet, EVM, Solana, and cross-chain commands plus the session-signer capability set:
+
+```bash
+alchemy --json --no-interactive agent-prompt --scope wallet
+```
+
+When the CLI is not installed yet but the agent needs the same contract, the unauthenticated `npx` variant works:
+
+```bash
+npx -y @alchemy/cli@latest --json --no-interactive agent-prompt --scope wallet
+```
+
 ## Execution rules
 
 - ALWAYS pass `--json --no-interactive` on every command
@@ -54,6 +66,7 @@ alchemy --json --no-interactive agent-prompt
 - NEVER run bare `alchemy` without `--json --no-interactive`
 - NEVER use curl or raw HTTP when an `alchemy` CLI command exists for the task — that's the `alchemy-api` (API-key) path, not this skill
 - NEVER use the CLI to generate production application code; hand off to `alchemy-api` or `agentic-gateway` for shipped code
+- For onchain actions (`evm send`, `evm contract call`, `evm approve`, `evm swap`, `xchain bridge`, `solana send`), run `alchemy --json --no-interactive wallet status --verify` first to confirm the session is still valid, then prefer `--dry-run` before broadcast. Treat sponsorship policies (`--gas-policy-id`, `--fee-policy-id`) as fee controls, not wallet spend limits.
 
 ## Preflight
 
@@ -91,9 +104,11 @@ To log out: `alchemy auth logout`
 | API key | `alchemy config set api-key <key>` | `ALCHEMY_API_KEY` | `balance`, `tx`, `receipt`, `block`, `gas`, `logs`, `rpc`, `trace`, `debug`, `tokens`, `nfts`, `transfers`, `prices`, `portfolio`, `simulate`, `bundler`, `gas-manager`, `solana` |
 | Access key | `alchemy config set access-key <key>` | `ALCHEMY_ACCESS_KEY` | `apps` (all subcommands incl. `configured-networks`) |
 | Webhook key | `alchemy config set webhook-api-key <key>` | `ALCHEMY_WEBHOOK_API_KEY` | `webhooks` |
+| Agent wallet session | `alchemy wallet connect --mode session --instance-name <label>` (approve in dashboard) | -- | `evm send`, `evm contract call`, `evm approve`, `evm swap`, `xchain bridge`, `evm status`, `solana send`, `solana status`, `solana delegate` |
+| Local wallet | `alchemy wallet connect --mode local` (`--import <path>` for EVM key) | -- | Same wallet-signed commands as session, with `--signer local` override |
 | x402 wallet | `alchemy wallet generate` then `alchemy config set x402 true` | `ALCHEMY_WALLET_KEY` | `balance`, `tx`, `block`, `rpc`, `trace`, `debug`, `tokens`, `nfts`, `transfers` |
 
-`alchemy network list` and `alchemy version` / `update-check` need no auth.
+`alchemy network list`, `alchemy evm network list`, `alchemy solana network list`, and `alchemy version` / `update-check` need no auth.
 
 ### Selecting a default app
 
@@ -153,6 +168,62 @@ Get API/access keys at [dashboard.alchemy.com](https://dashboard.alchemy.com/).
 |------|---------|
 | Solana JSON-RPC | `alchemy solana rpc <method> [params...]` |
 | Solana DAS (NFTs/assets) | `alchemy solana das <method> '<json>'` |
+| List Solana network slugs | `alchemy solana network list` |
+
+### Agent wallet sessions
+
+A wallet session is a CLI-bound signer that the user approves in the [Agent Wallets dashboard](https://dashboard.alchemy.com/products/agent-wallet/evm-wallet). The agent never sees the private key. Sessions expire automatically and can be revoked from the CLI or the dashboard. Session signing capabilities the server may grant: `evm.signMessage`, `evm.signTypedData`, `evm.signAuthorization`, `evm.prepareCalls`, `evm.sendCalls`, `solana.signTransaction`. The session signer does **not** support raw EVM transaction signing — use the action commands below, which execute through Alchemy smart-wallet calls.
+
+| Task | Command |
+|------|---------|
+| Connect a session (request EVM + Solana caps) | `alchemy wallet connect --mode session --instance-name <label>` |
+| Connect local-key fallback | `alchemy wallet connect --mode local` (`--import <path>` for an EVM key file) |
+| Show wallet + active signer status | `alchemy wallet status` |
+| Verify the backend session is still valid | `alchemy wallet status --verify` |
+| Show configured wallet addresses | `alchemy wallet address` |
+| Switch active signer | `alchemy wallet use session\|local` |
+| Show address as a QR code | `alchemy wallet qr` |
+| Revoke / disconnect the session | `alchemy wallet disconnect` |
+| Per-command signer override | append `--signer session\|local` |
+
+Run `alchemy --json --no-interactive wallet status --verify` before any state-changing wallet action — it returns the active signer, expiry, chain-specific session metadata, backend status, and enabled signer capabilities.
+
+### EVM actions (wallet-signed)
+
+These commands execute through Alchemy smart-wallet calls (nonce handling, call IDs, status polling, optional paymaster). Swaps and bridges are EVM mainnet only.
+
+| Task | Command |
+|------|---------|
+| Send native or ERC-20 | `alchemy evm send <recipient> <amount> -n <network>` (add `--token <addr>` for ERC-20) |
+| Contract call (state-changing) | `alchemy evm contract call <contract> <method> --args '<json>' [--abi <path>] [--value <eth>]` |
+| ERC-20 approve | `alchemy evm approve <token> <spender> <amount> [--yes]` (unlimited needs confirm or `--yes`) |
+| ERC-20 reset / revoke | `alchemy evm approve <token> <spender> 0` |
+| Same-chain swap (quote) | `alchemy evm swap quote --from <token> --to <token> --amount <n> -n <evm-mainnet>` |
+| Same-chain swap (execute) | `alchemy evm swap execute --from <token> --to <token> --amount <n> -n <evm-mainnet>` |
+| Tx status (call ID or hash) | `alchemy evm status <call-id-or-tx-hash> -n <network>` |
+| Sponsor gas | append `--gas-sponsored --gas-policy-id <id>` to send / contract call / swap |
+| Dry-run | append `--dry-run` to preview a send / swap / bridge before broadcast |
+| List EVM network slugs | `alchemy evm network list` |
+
+### Cross-chain bridges (EVM mainnet only)
+
+| Task | Command |
+|------|---------|
+| Bridge quote | `alchemy xchain bridge quote --token <addr> --amount <n> -n <from-network> --to-network <to-network>` |
+| Bridge execute | `alchemy xchain bridge execute --token <addr> --amount <n> -n <from-network> --to-network <to-network>` |
+
+### Solana actions (wallet-signed)
+
+Solana sends can be driven by either a session signer or a local Solana wallet.
+
+| Task | Command |
+|------|---------|
+| Send SOL | `alchemy solana send <recipient> <amount> -n solana-mainnet` |
+| Send SPL token | `alchemy solana send <recipient> <amount> -n solana-mainnet --token <mint>` |
+| Sponsor Solana fees | append `--fee-sponsored --fee-policy-id <id>` |
+| Tx status | `alchemy solana status <signature> -n solana-mainnet` (reads from stdin if omitted) |
+| SPL delegate approve | `alchemy solana delegate approve --token-account <addr> --mint <addr> --delegate <addr> --amount <n> --decimals <n>` |
+| SPL delegate revoke | `alchemy solana delegate revoke --token-account <addr>` |
 
 ### Webhooks
 
@@ -177,10 +248,12 @@ Get API/access keys at [dashboard.alchemy.com](https://dashboard.alchemy.com/).
 
 ### Wallet (x402)
 
+These commands manage the local key that pays for x402 gateway requests. For onchain sends and contract interactions, use the agent wallet session (see [Agent wallet sessions](#agent-wallet-sessions)) or local-mode wallets via `alchemy wallet connect --mode local` — not these x402 commands.
+
 | Task | Command |
 |------|---------|
-| Generate a new wallet | `alchemy wallet generate` |
-| Import a wallet from a key file | `alchemy wallet import <path>` |
+| Generate a new x402 wallet | `alchemy wallet generate` |
+| Import an x402 wallet from a key file | `alchemy wallet import <path>` |
 | Show the locally configured wallet address | `alchemy wallet address` |
 
 ### App management
