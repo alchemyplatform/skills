@@ -12,7 +12,7 @@ related:
   - node-enhanced-apis.md
   - data-transfers-api.md
   - operational-rate-limits-and-compute-units.md
-updated: 2026-02-23
+updated: 2026-06-17
 ---
 # JSON-RPC (EVM)
 
@@ -341,7 +341,7 @@ Result is the transaction hash. Use `eth_getTransactionReceipt` to check if it w
 
 - All quantities are hex-encoded strings (e.g., `"0x10"` = 16).
 - Block tags: `"latest"` (most recent), `"finalized"` (finalized by consensus), `"safe"` (safe head), `"earliest"` (genesis), `"pending"` (pending state).
-- `eth_getLogs` over large block ranges can be expensive. Chunk requests and use narrow ranges.
+- `eth_getLogs` block range limits are tiered per chain and plan. Free tier is **10 blocks/request on every chain**. Pay-As-You-Go and Enterprise tiers allow unlimited block ranges on the high-volume EVM chains (Ethereum, Base, Optimism, Arbitrum, Polygon, Worldchain, BNB, HyperEVM, Monad Mainnet, Tempo Mainnet, Sei Mainnet) and 10,000 blocks/request on most other chains. Some chains have stricter or larger caps (Berachain, Plasma, Unichain, Monad Testnet). Canonical per-chain matrix is on the [`eth_getLogs` reference page](https://www.alchemy.com/docs/chains/ethereum/ethereum-api-endpoints/eth-get-logs). Chunk requests across narrow ranges if you might exceed your tier's cap.
 - Handle HTTP `429` (rate limit) with exponential backoff.
 - Handle JSON-RPC errors in the response body (`error.code`, `error.message`).
 

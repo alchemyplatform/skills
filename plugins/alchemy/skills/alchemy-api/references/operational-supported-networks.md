@@ -9,7 +9,7 @@ tags:
 related:
   - node-json-rpc.md
   - solana-rpc.md
-updated: 2026-04-22
+updated: 2026-06-17
 ---
 # Supported Networks
 
@@ -22,6 +22,7 @@ Alchemy supports multiple EVM and Solana networks. Always verify network availab
 - Not all products are available on every chain.
 
 ## Recently Deprecated / Removed
+- **Sonic Blaze (testnet)** — sunset by Sonic Labs on 2026-05-01; cutoff on Alchemy was **2026-06-12**. The `sonic-blaze` slug is no longer routable. `sonic-mainnet` and `sonic-testnet` remain supported. See the [Sonic Blaze deprecation notice](https://www.alchemy.com/docs/reference/sonic/sonic-blaze-deprecation-notice) for migration guidance.
 - **Arbitrum Nova** — deprecated. Nova endpoints (`arbnova-mainnet`, `ARBNOVA_MAINNET`) are no longer supported across Node, Wallets (Bundler, Gas Manager), and related products. See the [Arbitrum Nova deprecation notice](https://www.alchemy.com/docs/reference/arbitrum-nova/arbitrum-nova-deprecation-notice) for migration guidance.
 
 
@@ -212,7 +213,6 @@ solana-devnet
 solana-mainnet
 soneium-mainnet
 soneium-minato
-sonic-blaze
 sonic-mainnet
 sonic-testnet
 stable-mainnet

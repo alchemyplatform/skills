@@ -10,12 +10,18 @@ related:
   - wallets-smart-wallets.md
   - wallets-gas-manager.md
   - operational-auth-and-keys.md
-updated: 2026-05-27
+updated: 2026-06-17
 ---
 # Account Kit (v4) and the v5 stack
 
 ## Summary
 "Account Kit" now refers to the **v4** SDK family (`@account-kit/*`, `@aa-sdk/*`). Wallet APIs **v5** is the recommended stack for new builds. The docs site labels the legacy nav section "Account Kit (v4)" to make this explicit.
+
+## ⚠️ Alchemy Signer is being sunset
+
+As of **June 16, 2026**, Alchemy Signer APIs no longer support new user signups. Existing users can still log in to be migrated. The `POST /signer/v1/signup` endpoint is deprecated and the `Create Wallet` reference page has been removed. JWT auth (`POST /signer/v1/auth/jwt`) still authenticates existing users, but it no longer creates new wallets or pregenerates wallets.
+
+**For new builds**: use [Privy](https://www.alchemy.com/docs/wallets/third-party/signers/privy) as the signer with [Wallet APIs v5](https://www.alchemy.com/docs/wallets/quickstart). Do NOT scaffold new applications against `@account-kit/signer` or the `/signer/v1/signup` REST endpoint — both will only serve existing user migration after the cutoff.
 
 ## v4 vs v5 routing
 
@@ -23,8 +29,8 @@ updated: 2026-05-27
 |---|---|---|
 | New smart-account integration (EVM or Solana) | `@alchemy/wallet-apis@^5` + `@alchemy/smart-accounts@^5` | The v5 stack. Solana support landed via `wallet_prepareCalls` + `wallet_sendPreparedCalls` (CAIP-2 IDs `solana:mainnet`, `solana:devnet`). |
 | Low-level bundler client | `@alchemy/aa-infra@^5` | Replaces `@account-kit/infra` from the v4 era. |
-| Embedded signer / auth UX (passkey, email, social, EOA) | Account Kit v4 (`@account-kit/react`, `@account-kit/signer`) | v5 has no signer SDK yet. For new builds, Alchemy's recommended pairing is **Wallet APIs v5 + Privy as signer**. |
-| Existing Account Kit v4 app | Stay on v4 for now | v4 is still maintained. The `aa-sdk` repo dropped v4 reference docs from `main`; use `aa-sdk@v4.x.x` branch for source. |
+| New embedded signer / auth UX (passkey, email, social, EOA) | **Privy + Wallet APIs v5** | Alchemy Signer signup is sunset; `@account-kit/signer` cannot create new users. Privy is the recommended pairing. |
+| Existing Account Kit v4 app (only existing-user logins) | Stay on v4 for now | v4 maintains existing-user login + migration. New-user signup is blocked at the Signer API. Use `aa-sdk@v4.x.x` branch for v4 source. |
 | Migration off Account Kit v4 → v5 | See [v5 migration guide](https://www.alchemy.com/docs/wallets/resources/migration-v5) | Plus the v4 banner on each affected page in `/docs/wallets/...`. |
 
 ## What changed in v5 (highlights)
@@ -35,9 +41,9 @@ updated: 2026-05-27
 - Beta notices have been removed across the wallets section — Wallet APIs v5 is GA.
 
 ## Primary Use Cases (Account Kit v4)
-- Embedded wallet UX in web apps (signer-driven authentication).
-- Email/social/passkey wallet creation.
-- Signing flows that don't yet have a v5 equivalent.
+- Continuing to serve **existing** Account Kit Signer users (login + migration only).
+- Signing flows on existing-user accounts that don't yet have a v5 equivalent.
+- New-user wallet creation is no longer in scope — see the sunset notice above.
 
 ## Integration Notes
 - Pair with `wallets-gas-manager.md` for sponsored transactions.
@@ -47,6 +53,7 @@ updated: 2026-05-27
 - `aa-sdk` reference URLs on `main` now 404 — use the `v4.x.x` branch.
 - Account Kit v4 has no Solana support; use v5 Wallet APIs for Solana.
 - Mixing v4 and v5 packages in the same app is not supported.
+- Calling `POST /signer/v1/signup` for a new user returns a deprecation response after 2026-06-16. The previous `isSignup: true` response field is also deprecated.
 
 ## Related Files
 - `wallets-wallet-apis.md` (v5 surface)

@@ -38,6 +38,17 @@ The server runs at `https://mcp.alchemy.com/mcp` and authenticates via OAuth —
 
 ### Claude Code
 
+**Recommended: Alchemy Claude Plugin** — installs the hosted MCP server, agent skills, and slash commands (`/alchemy:setup`, `/alchemy:balance`, `/alchemy:nfts`, `/alchemy:token`, `/alchemy:tx`, `/alchemy:portfolio`, `/alchemy:gas`, `/alchemy:solana`, `/alchemy:create-app`) in one step:
+
+```text
+/plugin marketplace add alchemyplatform/alchemy-claude-plugin
+/plugin install alchemy@alchemy
+```
+
+OAuth opens on the first tool call. See the [Alchemy Claude Plugin docs](https://www.alchemy.com/docs/alchemy-claude-plugin).
+
+**Fallback: MCP-only** (no slash commands or bundled skills):
+
 ```bash
 claude mcp add alchemy --transport http https://mcp.alchemy.com/mcp
 ```
