@@ -9,7 +9,7 @@ tags:
 related:
   - node-json-rpc.md
   - solana-rpc.md
-updated: 2026-04-22
+updated: 2026-06-24
 ---
 # Supported Networks
 
@@ -22,6 +22,7 @@ Alchemy supports multiple EVM and Solana networks. Always verify network availab
 - Not all products are available on every chain.
 
 ## Recently Deprecated / Removed
+- **Polygon zkEVM Mainnet** and **Polygon zkEVM Cardona** (testnet) — communicated deprecation date **July 1, 2026** (the Polygon zkEVM network shutdown date). Alchemy continues serving RPC through July 9, 2026, but the deprecation date customers should target is July 1. There is no migration target — the network itself is sunsetting. The Data API slugs `polygonzkevm-mainnet` and `polygonzkevm-cardona` will stop resolving on July 9. See the [Polygon zkEVM deprecation notice](https://www.alchemy.com/docs/reference/polygon-zkevm/polygon-zkevm-deprecation-notice).
 - **Arbitrum Nova** — deprecated. Nova endpoints (`arbnova-mainnet`, `ARBNOVA_MAINNET`) are no longer supported across Node, Wallets (Bundler, Gas Manager), and related products. See the [Arbitrum Nova deprecation notice](https://www.alchemy.com/docs/reference/arbitrum-nova/arbitrum-nova-deprecation-notice) for migration guidance.
 
 
@@ -188,8 +189,6 @@ plasma-mainnet
 plasma-testnet
 polygon-amoy
 polygon-mainnet
-polygonzkevm-cardona
-polygonzkevm-mainnet
 polynomial-mainnet
 polynomial-sepolia
 race-mainnet

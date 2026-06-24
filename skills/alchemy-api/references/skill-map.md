@@ -25,6 +25,7 @@ Complete index of all reference files organized by product area. Use the Endpoin
 | `references/data-portfolio-apis.md` | Portfolio APIs | Portfolio APIs provide consolidated wallet views (tokens, NFTs, and transaction history) across multiple networks in single requests |
 | `references/data-prices-api.md` | Prices API | Query token prices for current and historical data using Alchemy's Prices API |
 | `references/data-simulation-api.md` | Simulation API | Simulate transactions before submitting them on-chain. Use this for safety checks and user previews |
+| `references/data-stellar-api.md` | Stellar Data API | REST endpoints (POST /data/stellar/...) for indexed Stellar transfer history, account balances, and NFT holdings across native XLM, classic trustline assets, and Soroban contract tokens |
 | `references/data-token-api.md` | Token API | Fetch token balances, metadata, and allowances without manual contract calls. Token API methods are exposed as Alchemy JSON-RPC methods |
 | `references/data-transfers-api.md` | Transfers API | Query historical transfers across ERC-20/721/1155 and native transfers without manual log scanning |
 

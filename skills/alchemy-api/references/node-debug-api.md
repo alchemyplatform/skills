@@ -10,7 +10,7 @@ tags:
 related:
   - node-trace-api.md
   - data-simulation-api.md
-updated: 2026-02-23
+updated: 2026-06-24
 ---
 # Debug API
 
@@ -100,7 +100,7 @@ curl -s -X POST https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
 
 ## `debug_traceCall`
 
-Traces a call without submitting it (like `eth_call` but with trace output).
+Traces a call without submitting it (like `eth_call` but with trace output). `debug_traceCallMany` accepts an array of these objects and traces them sequentially against the same state.
 
 ### Parameters
 
@@ -108,7 +108,24 @@ Traces a call without submitting it (like `eth_call` but with trace output).
 |-----------|------|----------|---------|-------------|
 | `transaction` | object | Yes | — | Transaction object (`from`, `to`, `data`, `value`, `gas`) |
 | `blockTag` | string | No | `"latest"` | Block tag or hex number |
-| `options` | object | No | — | Same tracer options as `debug_traceTransaction` |
+| `options.tracer` | string | No | — | `"callTracer"` or `"prestateTracer"` |
+| `options.tracerConfig.onlyTopCall` | boolean | No | `false` | Only trace the top-level call |
+| `options.stateOverrides` | object | No | — | Per-account state patches applied before the trace runs (see schema below) |
+
+### `stateOverrides` schema
+
+`stateOverrides` is an object keyed by account address. Each value is an object with the following fields, all OPTIONAL siblings (NOT nested under `stateDiff`):
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `balance` | string (hex uint256) | Override the account's native balance |
+| `nonce` | string (hex uint64) | Override the account's nonce |
+| `code` | string (hex bytes) | Override the account's deployed bytecode |
+| `state` | object | Replace the account's ENTIRE storage with this slot-to-32-byte-value map. Mutually exclusive with `stateDiff` |
+| `stateDiff` | object | PATCH listed slots only (slot hex → 32-byte hex value). Mutually exclusive with `state` |
+| `movePrecompileToAddress` | string (hex address) | Move a precompile to a different address |
+
+This mirrors geth's `OverrideAccount` struct. `state` (full replacement) and `stateDiff` (patch) cannot both be set on the same account.
 
 ### Request
 
@@ -126,7 +143,20 @@ curl -s -X POST https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
         "data": "0x70a08231000000000000000000000000d8da6bf26964af9d7eed9e03e53415d37aa96045"
       },
       "latest",
-      { "tracer": "callTracer" }
+      {
+        "tracer": "callTracer",
+        "stateOverrides": {
+          "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045": {
+            "balance": "0x56bc75e2d63100000",
+            "nonce": "0x0"
+          },
+          "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": {
+            "stateDiff": {
+              "0x0000000000000000000000000000000000000000000000000000000000000003": "0x000000000000000000000000000000000000000000084595161401484a000000"
+            }
+          }
+        }
+      }
     ]
   }'
 ```
