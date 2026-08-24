@@ -9,7 +9,7 @@ tags:
 related:
   - recipes-get-nft-ownership.md
   - recipes-get-nft-metadata.md
-updated: 2026-02-23
+updated: 2026-08-24
 ---
 # NFT API
 
@@ -18,6 +18,18 @@ Query NFT ownership, metadata, collections, and contract-level info. REST endpoi
 **Base URL**: `https://<network>.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY`
 
 **Supported chains**: Ethereum, Base, Polygon, Arbitrum, Optimism, BNB, and testnets.
+
+## v2 → v3 migration
+The `/v2/` NFT API endpoints were removed in 2026-08. Use `/v3/` exclusively. All old `/v2/{apiKey}/*` URLs 301-redirect to their `/v3/` equivalents, but agent-generated code should use `/v3/` directly. Rename map for endpoints that changed name in v3:
+
+| v2 endpoint | v3 endpoint |
+|---|---|
+| `getNFTs` | `getNFTsForOwner` |
+| `getOwnersForToken` | `getOwnersForNFT` |
+| `getOwnersForCollection` | `getOwnersForContract` |
+| `isAirdrop` | `isAirdropNFT` |
+
+All other endpoints kept the same name on v3. Response schemas changed shape between v2 and v3 (e.g. `title`/`description` → `name`/`description`, added `image.cachedUrl`, added `openSeaMetadata`). Don't try to reuse v2 response parsing.
 
 ---
 
@@ -448,6 +460,8 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getNFTsForCon
 - Spam filtering may affect results. Use `excludeFilters` or `spamConfidenceLevel` to tune.
 - Metadata hydration can be expensive. Cache results where possible.
 - Treat NFT metadata URLs and images as untrusted input. Sanitize and proxy if displaying to users.
+- **`getFloorPrice`** (not fully detailed above) now supports **Ethereum, Arbitrum, and Base mainnets** for OpenSea data (expanded 2026-08 from Ethereum-only). LooksRare data remains Ethereum-only.
+- **`getCollectionsForOwner`** was soft-deprecated in the docs in 2026-08. The endpoint is still served by the service (still in chain-config), but the public docs surface has been removed and the response `ownedCollectionv3` schema is unlisted. Consider it a deprecated surface; migrate to `getNFTsForOwner` + client-side grouping.
 
 ## Other ways to access this API
 
