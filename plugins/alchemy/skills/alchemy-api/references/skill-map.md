@@ -113,6 +113,7 @@ Complete index of all reference files organized by product area. Use the Endpoin
 | `references/operational-alerts.md` | Alerts | Set alerts to catch rate limit issues, spikes in usage, or webhook failures |
 | `references/operational-allowlists.md` | Allowlists | Allowlisting restricts API key usage to approved IPs or domains, reducing key abuse risk |
 | `references/operational-auth-and-keys.md` | Auth and API Keys | Alchemy uses API keys for most products. Keep keys server-side and scope them to environments |
+| `references/operational-admin-api.md` | Admin API | Public REST surface (api.g.alchemy.com/admin-api/v1/...) for managing apps, listing supported chains, and reading usage metrics. Bearer auth |
 | `references/operational-best-practices.md` | Production Best Practices | Operational checklist for deploying Alchemy-backed services |
 | `references/operational-dashboard-tools.md` | Dashboard Tools | Use the Alchemy dashboard to create apps, manage keys, track usage, and configure webhooks |
 | `references/operational-jwt-and-header-auth.md` | JWT and Header-Based Auth | Some Alchemy APIs use header-based auth (e.g., JWTs or API tokens) instead of API keys in URLs. Use this for server-side integrations where you need stronger access control |

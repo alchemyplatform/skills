@@ -271,6 +271,31 @@ Run `alchemy --json --no-interactive wallet status --verify` before any state-ch
 | List Admin API chain identifiers (for `app create`/`update`) | `alchemy app chains` |
 | List EVM RPC network slugs (for `--network`) | `alchemy evm network list [--mainnet-only] [--testnet-only] [--search <term>]` |
 
+The CLI's `app` and `usage` commands are thin wrappers over Alchemy's public **Admin API** (`api.g.alchemy.com/admin-api/v1/...`). Apps and Chains endpoints are public and self-serve; Usage endpoints are also self-serve for app-scoped queries. See `references/operational-admin-api.md` for the REST surface, auth model (`x-alchemy-token` bearer or the CLI's browser session), and endpoint enumeration.
+
+### Usage and metering
+
+| Task | Command |
+|------|---------|
+| Summary of usage over a range | `alchemy usage summary --start-date <YYYY-MM-DD> --end-date <YYYY-MM-DD> [--app-ids <ids>] [--networks <slugs>] [--metrics amount,usd]` |
+| Timeseries of usage over a range | `alchemy usage timeseries --start-date <YYYY-MM-DD> --end-date <YYYY-MM-DD> [--granularity minute\|hour\|day\|month] [--products <ids>] [--metrics amount] [--app-ids <ids>] [--networks <slugs>] [--methods <names>] [--request-types <types>] [--group-by <field>]` |
+| Timeseries (alias) | `alchemy usage time-series ...` |
+
+**Range limits** on timeseries queries (as of 2026-07-02):
+
+- Free plan: **7 days** maximum lookback.
+- Pay-as-you-go: **30 days** maximum lookback.
+- Longer ranges: contact sales.
+
+If the requested range exceeds the plan limit, the CLI does NOT error — it returns the allowed range and surfaces both the requested and returned range in the response so you can detect the truncation.
+
+**`--metrics` semantics** differ by endpoint:
+
+- `alchemy usage timeseries` accepts only `amount`. The `usd` metric is **not** valid on time-series responses (removed 2026-08-13 per API-side change); pass `--metrics amount` or omit the flag.
+- `alchemy usage summary` accepts both `amount` and `usd` (comma-separated) on summary responses.
+
+Auth: same browser session as `alchemy app` (Admin API access).
+
 ### x402 payments (third-party APIs)
 
 `alchemy x402 request` and `alchemy x402 balance` pay **third-party** APIs in USDC per RFC 402. This is a separate axis from `--x402` / `alchemy config set x402 true` (which handles Alchemy-API auth for Alchemy's own gateway). Requires `@alchemy/cli` 0.22.0 or later.
