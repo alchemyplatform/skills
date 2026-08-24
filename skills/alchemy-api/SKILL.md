@@ -137,6 +137,7 @@ Developers can always create a free API key at [https://dashboard.alchemy.com/](
 | Simulate tx | `alchemy_simulateAssetChanges` | `references/data-simulation-api.md` |
 | Create webhook | `POST /create-webhook` | `references/webhooks-details.md` |
 | Solana NFT data | `getAssetsByOwner` (DAS) | `references/solana-das-api.md` |
+| Solana realtime events (per-account / per-program / logs / tx status) | `accountSubscribe`, `programSubscribe`, `logsSubscribe`, `signatureSubscribe` (PubSub WebSocket) | `references/solana-websocket-subscriptions.md` |
 | Sui objects/txs | `GetObject`, `GetTransaction` (gRPC) | `references/sui-grpc-objects-and-ledger.md` |
 | Sui balances | `GetBalance`, `ListBalances` (gRPC) | `references/sui-grpc-state-and-balances.md` |
 | Sui checkpoints stream | `SubscribeCheckpoints` (gRPC) | `references/sui-grpc-subscriptions.md` |

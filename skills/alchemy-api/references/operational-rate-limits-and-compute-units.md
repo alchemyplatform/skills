@@ -9,7 +9,7 @@ tags:
 related:
   - operational-pricing-and-plans.md
   - data-apis
-updated: 2026-02-05
+updated: 2026-05-13
 ---
 # Rate Limits and Compute Units
 
@@ -24,6 +24,19 @@ Alchemy meters usage using compute units (CU) and enforces per-key rate limits. 
 ## Practical Patterns
 - Use pagination and resume tokens (`pageKey`) for large datasets.
 - Cache token metadata and NFT metadata aggressively.
+
+## Webhooks and WebSocket Subscriptions Pricing
+Most webhooks and WebSocket subscriptions are priced by **bandwidth** at `0.04 CU / byte`. A typical 1000-byte event consumes 40 CU.
+
+**Exceptions — per-event pricing on Base Flashblocks subscriptions:**
+
+| Subscription | Pricing |
+|---|---|
+| `newFlashblockTransactions` | 40 CU / event |
+| `newFlashblocks` | 60 CU / event |
+| All other subscriptions | 0.04 CU / byte |
+
+When estimating cost for high-volume Flashblocks consumers, treat each event as a fixed CU charge regardless of payload size.
 
 ## Related Files
 - `operational-pricing-and-plans.md`

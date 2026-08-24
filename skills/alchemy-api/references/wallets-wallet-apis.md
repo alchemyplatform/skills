@@ -8,12 +8,12 @@ tags:
 related:
   - wallets-account-kit.md
   - operational-auth-and-keys.md
-updated: 2026-05-27
+updated: 2026-08-24
 ---
 # Wallet APIs
 
 ## Summary
-High-level wallet APIs (Wallet APIs **v5**, GA) enable programmatic wallet operations: signing, transaction preparation, account management, EIP-7702 delegation/undelegation, and (new in v5) Solana transactions. This is the recommended stack for new builds; Account Kit v4 stays for signer-only flows. See `wallets-account-kit.md` for v4 vs v5 routing.
+High-level wallet APIs (Wallet APIs **v5**, GA) enable programmatic wallet operations: signing, transaction preparation, account management, EIP-7702 delegation/undelegation, and (new in v5) Solana transactions. This is the recommended stack for new builds; Account Kit v4 is deprecated in-nav (only Export Private Key remains as a documented v4 page). See `wallets-account-kit.md` for v4 vs v5 routing.
 
 ## Primary Use Cases
 - Server-side transaction preparation (EVM and Solana).
@@ -32,13 +32,15 @@ The v5 stack lives under the `@alchemy/*` scope. Common imports:
 | `viem` | Underlying chain primitives (`parseEther`, `parseUnits`, `bigint` helpers). |
 
 ## Solana support
-`wallet_prepareCalls` and `wallet_sendPreparedCalls` accept Solana payloads alongside EVM via an `anyOf` schema:
+`wallet_prepareCalls` and `wallet_sendPreparedCalls` accept Solana payloads alongside EVM via an `anyOf` schema. See `wallets-solana-notes.md` for full request/SDK details. Summary:
 
-- `chainId` uses CAIP-2 form: `"solana:mainnet"` (mainnet) or `"solana:devnet"` (devnet).
-- `from` is a base58-encoded Solana address (32–44 chars), not a `0x` hex string.
-- The prepared transaction is returned with `type: "solana-transaction-v0"` (Solana v0 versioned transaction). EVM responses still use `type: "user-operation-v0.7"` etc.
-- Sign the returned tx with the user's Solana keypair, then submit it back through `wallet_sendPreparedCalls`.
-- Request shape: a single positional object with `calls` (EVM) **or** `instructions` (Solana, an array of raw Solana instructions); the call's `to`/`from`/encoding fields and the response shape are gated on whether you sent EVM or Solana inputs.
+- `chainId` uses CAIP-2 form: `"solana:mainnet"` or `"solana:devnet"`.
+- `from` is a base58 Solana address; `0x` hex is rejected.
+- **Field name is `calls` for both EVM and Solana** — the shape of each call item is what differs. Solana items are `{ programId, accounts: [{pubkey, isSigner, isWritable}], data }` with `data` as `0x`-hex instruction bytes.
+- Prepared response carries `type: "solana-transaction-v0"`. `signatureRequest.data` is the v0 tx wire bytes (hex).
+- Sign with Ed25519 and submit a base58 signature via `signature: { type: "ed25519", data: "<base58>" }`.
+- SDK: `createSmartWalletClient({ chain: "solana:devnet", signer, paymaster })` exposes `sendCalls({ calls: [...] })` and `client.solanaAccount`. Solana signer adapters live at `@alchemy/wallet-apis/solana` (`fromKitSigner`, `fromWalletAdapter`, `fromKeypair`, `fromWalletStandard`); Privy's `@privy-io/react-auth/solana` wallets work without an adapter.
+- Solana sponsorship is GA — point `paymaster: { policyId }` at a Solana Gas Manager policy. Per-request override via `capabilities.paymaster.policyId`. Top-level System Program / Associated Token Program account creation gets rent sponsored automatically; CPI-rent prefunding (`capabilities.paymaster.prefundRent: true`) is allowlisted (contact support).
 
 ## Encoding: bigint vs hex
 - **Client SDK (`@alchemy/wallet-apis` v5)**: takes `bigint` for amount fields like `fromAmount`, `minimumToAmount`, `value`. Use viem helpers: `parseEther("1.5")`, `parseUnits("100", 6)`.
@@ -53,9 +55,60 @@ Undelegation removes smart contract delegation from an EIP-7702 account by deleg
 - Available via both the client SDK (`@alchemy/wallet-apis`) and REST API.
 - For advanced control, use `wallet_prepareCalls` + `wallet_sendPreparedCalls` to inspect and sign the authorization separately.
 
+## Chain selection
+- For EVM, pass a viem chain object to `createSmartWalletClient({ chain })`. `viem/chains` exports include named entries like `hyperEvm` (HyperEVM mainnet) and `hyperliquidEvmTestnet`. Pass `hyperEvm` directly — no custom chain config needed.
+- For Solana, pass the CAIP-2 string `"solana:mainnet"` or `"solana:devnet"`.
+- Confirm the target network is enabled on your Alchemy app and that any gas policy is linked to the same app.
+
+## Non-7702 mode (request-then-send)
+Some chains (e.g. HyperEVM today) don't support EIP-7702 with Wallet APIs. On those chains, request a smart account address first, then pass that address as `account` on subsequent `sendCalls`:
+
+```ts
+const { address } = await client.requestAccount({
+  creationHint: { accountType: "sma-b" }, // MAv2 (the v5 default)
+});
+
+await client.sendCalls({
+  account: address,
+  calls: [{ to: target, value: 0n, data: "0x..." }],
+});
+```
+
+`accountType` values are self-serve as of 2026-05: `sma-b` (default, MAv2), `7702`, `la-v2`, `la-v2-multi-owner`, `ma-v1-multi-owner`, `la-v1.1.0`, `la-v1.0.2`, `la-v1.0.1`. Caching the returned address per signer avoids extra `requestAccount` calls on every send.
+
+### `wallet_requestAccount` and `createAdditional`
+By default, `wallet_requestAccount` returns the signer's **oldest existing** account, even if you pass a different `accountType` via `creationHint`. To force creation of a NEW account of the requested type when the signer already has an account, pass `createAdditional: true`:
+
+```ts
+const { address } = await client.requestAccount({
+  creationHint: { accountType: "7702" },
+  createAdditional: true,
+});
+```
+
+Without `createAdditional: true`, the returned account may not match the requested type. If your flow depends on a specific account type, either always pass `createAdditional: true` or check `accountType` in the response before proceeding.
+
+## Retries and automatic gas bumping
+When a call is stuck and you re-prepare it, the Wallet APIs server **automatically bumps gas fees** — the client no longer needs to compute a higher fee. The bump rule is **10% higher OR the current network minimum, whichever is higher**, applied per-field to `maxFeePerGas` and `maxPriorityFeePerGas`.
+
+- Do NOT override fees on retry unless you want to force a specific level.
+- This auto-bump is **Wallet APIs specific**. The direct bundler-API path (`eth_sendUserOperation`) still requires you to compute and submit higher fees yourself; see `wallets-bundler.md`.
+
+## Tracking sends: call ID, not transaction hash
+v5 Wallet API sends return a **call ID** (`callId`), not a `transactionHash`. Track and poll by call ID (`wallet_getCallsStatus`); the transaction hash appears in the receipt only after the bundler includes the UserOp on-chain.
+
+```ts
+const { callId } = await client.sendCalls({ calls: [...] });
+const status = await client.getCallsStatus({ id: callId });
+// status.receipts[0].transactionHash appears once mined
+```
+
+Do not build integrations that expect `receipts[0].transactionHash` to be available immediately after `sendCalls` returns.
+
 ## Integration Notes
 - Prefer client-side signing for user security.
 - Use server-side APIs only with strong access controls.
+- Privy + Wallet APIs: convert a Privy embedded EVM wallet with `toViemAccount({ wallet })` from `@privy-io/react-auth` and pass the returned `LocalAccount` as `signer`. For Solana, use the wallet returned by `useWallets` from `@privy-io/react-auth/solana` directly (no adapter).
 
 ## Common Errors & Troubleshooting
 When users report Wallet API failures, check for these common error patterns:
@@ -91,3 +144,7 @@ When users report Wallet API failures, check for these common error patterns:
 - [Legacy session keys with Wallet APIs](https://www.alchemy.com/docs/wallets/smart-wallets/session-keys/legacy-session-keys) — use existing session keys with Wallet APIs.
 - [v5 migration guide](https://www.alchemy.com/docs/wallets/resources/migration-v5)
 - [Swap Tokens (v5)](https://www.alchemy.com/docs/wallets/transactions/swap-tokens) — bigint amount conventions for the client SDK.
+- [Send Solana transactions](https://www.alchemy.com/docs/wallets/transactions/send-transactions) — SDK and raw-API flows for Solana.
+- [Solana signer adapters](https://www.alchemy.com/docs/wallets/solana/signers) — `fromKitSigner` / `fromWalletAdapter` / `fromKeypair` / `fromWalletStandard`.
+- [Solana sponsorship](https://www.alchemy.com/docs/wallets/transactions/sponsor-gas/solana) — client-level + per-request paymaster, rent sponsorship rules.
+- [Hyperliquid Transactions Quickstart](https://www.alchemy.com/docs/wallets/recipes/hyperliquid-wallets) — Privy + v5 + non-7702 `requestAccount` pattern on HyperEVM.

@@ -15,7 +15,7 @@ Complete index of all reference files organized by product area. Use the Endpoin
 | `references/node-json-rpc.md` | JSON-RPC (EVM) | Use Alchemy's EVM JSON-RPC endpoints for standard blockchain reads and writes (e.g., `eth_call`, `eth_getLogs`, `eth_sendRawTransaction`). This is the baseline for any EVM integration |
 | `references/node-trace-api.md` | Trace API | Trace APIs expose internal call data and state changes for transactions and blocks. Useful for analytics and auditing |
 | `references/node-utility-api.md` | Utility API | Convenience RPC methods that reduce round trips for common tasks like bulk transaction receipt retrieval |
-| `references/node-websocket-subscriptions.md` | WebSocket Subscriptions | Use WebSockets for real-time blockchain events without polling. Best for pending transactions, new blocks, and logs |
+| `references/node-websocket-subscriptions.md` | WebSocket Subscriptions (EVM) | EVM `eth_subscribe` for real-time blockchain events without polling. Best for pending transactions, new blocks, and logs. For Solana PubSub, see `solana-websocket-subscriptions.md` |
 
 ## Data
 | File | Name | Short Description |
@@ -25,6 +25,7 @@ Complete index of all reference files organized by product area. Use the Endpoin
 | `references/data-portfolio-apis.md` | Portfolio APIs | Portfolio APIs provide consolidated wallet views (tokens, NFTs, and transaction history) across multiple networks in single requests |
 | `references/data-prices-api.md` | Prices API | Query token prices for current and historical data using Alchemy's Prices API |
 | `references/data-simulation-api.md` | Simulation API | Simulate transactions before submitting them on-chain. Use this for safety checks and user previews |
+| `references/data-stellar-api.md` | Stellar Data API | REST endpoints (POST /data/stellar/...) for indexed Stellar transfer history, account balances, and NFT holdings across native XLM, classic trustline assets, and Soroban contract tokens |
 | `references/data-token-api.md` | Token API | Fetch token balances, metadata, and allowances without manual contract calls. Token API methods are exposed as Alchemy JSON-RPC methods |
 | `references/data-transfers-api.md` | Transfers API | Query historical transfers across ERC-20/721/1155 and native transfers without manual log scanning |
 
@@ -56,6 +57,7 @@ Complete index of all reference files organized by product area. Use the Endpoin
 | `references/solana-grpc-subscribe-transactions.md` | Subscribe Transactions | Transaction streams deliver raw or decoded transaction data in near real-time |
 | `references/solana-rpc.md` | Solana JSON-RPC | Standard Solana JSON-RPC endpoints for account, program, and transaction data |
 | `references/solana-wallets.md` | Solana Wallet Integration | High-level guidance for integrating Solana wallets and signing transactions |
+| `references/solana-websocket-subscriptions.md` | Solana WebSocket Subscriptions (PubSub) | Native `*Subscribe` / `*Unsubscribe` PubSub methods over WebSocket for real-time account, program, log, signature, slot, and root updates |
 
 ## Sui gRPC
 | File | Name | Short Description |
@@ -80,8 +82,8 @@ Complete index of all reference files organized by product area. Use the Endpoin
 | `references/wallets-gas-manager.md` | Gas Manager | Gas Manager (paymaster) enables gas sponsorship and cost control for smart wallet flows |
 | `references/wallets-smart-wallets.md` | Smart Wallets (concept) | Smart wallets (account abstraction) are programmable accounts with features like session keys, batched transactions, and gas sponsorship. Alchemy exposes these via the Wallet APIs product |
 | `references/wallets-solana-notes.md` | Solana Wallet Notes | Solana wallet integration differs from EVM. Use Solana-specific tooling and RPC semantics |
-| `references/wallets-supported-chains.md` | Wallet Supported Chains | Wallet tooling may support a subset of chains compared to raw RPC. Always confirm chain support before launch |
-| `references/wallets-wallet-apis.md` | Wallet APIs | High-level wallet APIs enable programmatic wallet operations such as signing, transaction preparation, or account management. This guide stays minimal and focuses on integration awareness |
+| `references/wallets-supported-chains.md` | Wallet Supported Chains | Wallet APIs run on a subset of chains, with separate availability per capability (Bundler, Gas Sponsorship, ERC-20 Gas Payments, BSOs). Always confirm chain × capability before launch |
+| `references/wallets-wallet-apis.md` | Wallet APIs | High-level wallet APIs for programmatic wallet operations: signing, transaction preparation, account management (including the `accountType` selector for `wallet_requestAccount`), and EIP-7702 delegation/undelegation |
 
 ## Rollups
 | File | Name | Short Description |

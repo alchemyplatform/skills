@@ -4,7 +4,7 @@ name: solana
 description: Solana-specific APIs including standard JSON-RPC, Digital Asset Standard (DAS) for NFTs and compressed assets, and wallet integration. Use when building Solana applications that need RPC access, NFT/asset queries, or Solana wallet tooling. For high-throughput streaming, see the yellowstone-grpc skill.
 tags: []
 related: []
-updated: 2026-02-14
+updated: 2026-05-06
 metadata:
   author: alchemyplatform
   version: "1.0"
@@ -12,12 +12,13 @@ metadata:
 # Solana APIs
 
 ## Summary
-Solana-specific APIs and streaming endpoints, including DAS (Digital Asset Standard) and Yellowstone gRPC.
+Solana-specific APIs and streaming endpoints, including DAS (Digital Asset Standard), PubSub WebSocket subscriptions, and Yellowstone gRPC.
 
 ## References (Recommended Order)
 1. [solana-rpc.md](solana-rpc.md) - Standard Solana JSON-RPC usage patterns.
 2. [solana-das-api.md](solana-das-api.md) - DAS endpoints for assets and metadata.
-3. [solana-wallets.md](solana-wallets.md) - Solana wallet integration notes.
+3. [solana-websocket-subscriptions.md](solana-websocket-subscriptions.md) - PubSub WebSocket subscriptions (`accountSubscribe`, `programSubscribe`, `logsSubscribe`, etc.).
+4. [solana-wallets.md](solana-wallets.md) - Solana wallet integration notes.
 
 ## Cross-References
 - `yellowstone-grpc` skill for high-throughput streaming (accounts/transactions/blocks).

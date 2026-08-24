@@ -1,7 +1,7 @@
 ---
 id: references/node-websocket-subscriptions.md
-name: 'WebSocket Subscriptions'
-description: 'Use WebSockets for real-time blockchain events without polling. Best for pending transactions, new blocks, and logs.'
+name: 'WebSocket Subscriptions (EVM)'
+description: 'EVM WebSocket subscriptions via `eth_subscribe`. Use for real-time pending transactions, new blocks, and logs without polling. For Solana PubSub, see `solana-websocket-subscriptions.md`.'
 tags:
   - alchemy
   - node-apis
@@ -10,11 +10,12 @@ tags:
 related:
   - node-json-rpc.md
   - webhooks-details.md
-updated: 2026-05-27
+  - solana-websocket-subscriptions.md
+updated: 2026-08-24
 ---
-# WebSocket Subscriptions
+# WebSocket Subscriptions (EVM)
 
-Real-time blockchain events via WebSocket. No polling required.
+Real-time blockchain events via WebSocket on EVM chains. No polling required. For Solana PubSub, see `solana-websocket-subscriptions.md`. For UTXO chains (Bitcoin / BCH / LTC / DOGE), see the per-chain "UTXO WebSockets" pages linked below.
 
 **Base URL**: `wss://<network>.g.alchemy.com/v2/$ALCHEMY_API_KEY`
 

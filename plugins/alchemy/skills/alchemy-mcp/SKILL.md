@@ -38,6 +38,17 @@ The server runs at `https://mcp.alchemy.com/mcp` and authenticates via OAuth —
 
 ### Claude Code
 
+The fastest path is the official [Alchemy Claude Plugin](https://www.alchemy.com/docs/alchemy-claude-plugin), which bundles this MCP server, slash commands (`/alchemy:balance`, `/alchemy:nfts`, `/alchemy:portfolio`, etc.), and the Alchemy agent skills in one install:
+
+```text
+/plugin marketplace add alchemyplatform/alchemy-claude-plugin
+/plugin install alchemy@alchemy
+```
+
+Then run `/alchemy:setup` to pick an app for the session. OAuth opens automatically on the first Alchemy tool call.
+
+To wire just the MCP server without the plugin, use the manual command:
+
 ```bash
 claude mcp add alchemy --transport http https://mcp.alchemy.com/mcp
 ```
