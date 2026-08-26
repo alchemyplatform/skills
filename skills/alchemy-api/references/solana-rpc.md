@@ -308,6 +308,22 @@ Omit all three params for latest-state (drop-in superset behavior with the stand
 
 See the [Account Archive guide](https://www.alchemy.com/docs/reference/solana-account-archive) for cursor iteration patterns and the trust model.
 
+### Historical *ByOwnerAtSlot methods (`getTokenAccountsByOwnerAtSlot`, `getBalanceByOwnerAtSlot`)
+Separate NEW methods (distinct from the standard-methods-with-`slot`-param above) for owner-scoped historical queries on Solana mainnet:
+
+| Method | Params (by-name) | Returns |
+|---|---|---|
+| `getTokenAccountsByOwnerAtSlot` | `owner` (Pubkey, required), `filter` = `{ mint }` OR `{ programId }` (required), optional `config`: `slot`, `pageKey`, `pageLimit`, `encoding`, `commitment`, `dataSlice`. | `{ context.slot, value[].{ pubkey, account }, pageKey }`. |
+| `getBalanceByOwnerAtSlot` | `wallet` (Pubkey, required; `owner` accepted as alias), `mint` (Pubkey, required), `slot` (integer, required, no default), `scope` (`"all"` \| `"ata"`, default `"all"`, case-sensitive). | Sum of the wallet's SPL / Token-2022 balance for the single mint at `slot`, already aggregated across every token account the wallet held. |
+
+Notes:
+- Solana mainnet only. Not available on devnet/testnet.
+- `getBalanceByOwnerAtSlot` has NO "latest" default — `slot` is required. Use standard `getBalance` or `getTokenAccountBalance` for live state.
+- `paramStructure: by-name` (send `params` as an object, not an array).
+- `scope: "ata"` restricts the sum to the wallet's Associated Token Account; `scope: "all"` sums across every account the wallet controls for that mint (including non-ATA accounts).
+- Pagination on `getTokenAccountsByOwnerAtSlot` uses `pageKey` / `pageLimit`; the response includes a next-page `pageKey` when more results exist.
+- Point-in-time coverage matches the Account Archive service (from July 2025 forward).
+
 ## Jito bundles
 
 Alchemy proxies four Jito bundle methods on the standard endpoint (`solana-mainnet.g.alchemy.com/v2/<key>`); no separate host or spec. The proxy routes to Jito internally.

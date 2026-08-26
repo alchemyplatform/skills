@@ -9,7 +9,7 @@ tags:
 related:
   - recipes-get-nft-ownership.md
   - recipes-get-nft-metadata.md
-updated: 2026-08-24
+updated: 2026-08-26
 ---
 # NFT API
 
@@ -19,15 +19,29 @@ Query NFT ownership, metadata, collections, and contract-level info. REST endpoi
 
 **Supported chains**: Ethereum, Base, Polygon, Arbitrum, Optimism, BNB, and testnets.
 
+## Deprecation notice (Sep 30, 2026 cutoff)
+The following 10 NFT API methods were removed from public docs in 2026-08 and are scheduled for **service shutdown on September 30, 2026**. They still serve traffic today but should be treated as deprecated:
+
+`getNFTSales`, `getSpamContracts`, `isAirdropNFT`, `isHolderOfContract`, `getCollectionsForOwner`, `computeRarity`, `summarizeNFTAttributes`, `searchContractMetadata`, `getCollectionMetadata`, `invalidateContract`.
+
+The `/v2/` counterparts of the same names (e.g., `isAirdrop`) are also being removed on the same date. Migration paths for the common cases:
+
+- `getCollectionsForOwner` → `getNFTsForOwner` + client-side grouping by `contract.address`.
+- `isAirdropNFT` → check `contract.spamClassifications` or `contract.isSpam` on any of the surviving endpoints.
+- `getSpamContracts` → check per-contract `contract.isSpam` on the surviving endpoints.
+- `getNFTSales` → migrate to on-chain event indexing (Transfers API) or an external NFT sales provider.
+- `computeRarity`, `summarizeNFTAttributes`, `getCollectionMetadata`, `searchContractMetadata`, `isHolderOfContract`, `invalidateContract` → no direct replacements; if you rely on these, contact support before Sep 30.
+
+None of the removed methods are documented in the sections below — the surviving surface is what's shown.
+
 ## v2 → v3 migration
-The `/v2/` NFT API endpoints were removed in 2026-08. Use `/v3/` exclusively. All old `/v2/{apiKey}/*` URLs 301-redirect to their `/v3/` equivalents, but agent-generated code should use `/v3/` directly. Rename map for endpoints that changed name in v3:
+The `/v2/` NFT API endpoints were removed in 2026-08. Use `/v3/` exclusively. All old `/v2/{apiKey}/*` URLs 301-redirect to their `/v3/` equivalents, but agent-generated code should use `/v3/` directly. Rename map for endpoints that changed name in v3 AND are still supported:
 
 | v2 endpoint | v3 endpoint |
 |---|---|
 | `getNFTs` | `getNFTsForOwner` |
 | `getOwnersForToken` | `getOwnersForNFT` |
 | `getOwnersForCollection` | `getOwnersForContract` |
-| `isAirdrop` | `isAirdropNFT` |
 
 All other endpoints kept the same name on v3. Response schemas changed shape between v2 and v3 (e.g. `title`/`description` → `name`/`description`, added `image.cachedUrl`, added `openSeaMetadata`). Don't try to reuse v2 response parsing.
 
@@ -461,7 +475,7 @@ curl -s "https://eth-mainnet.g.alchemy.com/nft/v3/$ALCHEMY_API_KEY/getNFTsForCon
 - Metadata hydration can be expensive. Cache results where possible.
 - Treat NFT metadata URLs and images as untrusted input. Sanitize and proxy if displaying to users.
 - **`getFloorPrice`** (not fully detailed above) now supports **Ethereum, Arbitrum, and Base mainnets** for OpenSea data (expanded 2026-08 from Ethereum-only). LooksRare data remains Ethereum-only.
-- **`getCollectionsForOwner`** was soft-deprecated in the docs in 2026-08. The endpoint is still served by the service (still in chain-config), but the public docs surface has been removed and the response `ownedCollectionv3` schema is unlisted. Consider it a deprecated surface; migrate to `getNFTsForOwner` + client-side grouping.
+- **`getCollectionsForOwner`** was soft-deprecated in the docs in 2026-08 and is scheduled for **hard shutdown on Sep 30, 2026** (see the Deprecation notice at the top of this file). Migrate to `getNFTsForOwner` + client-side grouping before the cutoff.
 
 ## Other ways to access this API
 

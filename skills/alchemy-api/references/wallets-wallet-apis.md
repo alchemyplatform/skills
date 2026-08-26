@@ -8,7 +8,7 @@ tags:
 related:
   - wallets-account-kit.md
   - operational-auth-and-keys.md
-updated: 2026-08-24
+updated: 2026-08-26
 ---
 # Wallet APIs
 
@@ -48,12 +48,31 @@ The v5 stack lives under the `@alchemy/*` scope. Common imports:
 
 If you see `expected bigint, got string`, you're passing a hex string to the SDK — convert via `BigInt(hex)` or use viem helpers.
 
+## EIP-7702 delegation contracts
+Wallet APIs accept two Modular Account v2 delegation contracts. Any other delegation address is rejected on `wallet_prepareCalls`:
+
+| Version | Contract address |
+|---|---|
+| v1.0.0 | `0x69007702764179f14F51cdce752f4f775d74E139` |
+| v1.1.0 | `0x77021100bD87b7008E5E1989d0eB38555d0d0000` |
+
+v1.1.0 shipped in 2026-08 alongside v1.0.0. New accounts default to v1.1.0 where available; already-delegated accounts stay on their current version until re-delegated. Both point at `SemiModularAccount7702`. The set of accepted delegation addresses is not user-configurable — verify the target address is one of the two above before signing an authorization.
+
+Undelegating restores the EOA by delegating to `0x0000000000000000000000000000000000000000`.
+
 ## EIP-7702 Undelegation
 Undelegation removes smart contract delegation from an EIP-7702 account by delegating to the zero address (`0x0000...0000`), restoring it to a plain EOA. Key details:
 - Gas is sponsored through a **BSO (Bundler Sponsorship) policy** — the account does not need native tokens.
 - Requires **enterprise plan** — sponsored undelegation is gated to enterprise customers.
 - Available via both the client SDK (`@alchemy/wallet-apis`) and REST API.
 - For advanced control, use `wallet_prepareCalls` + `wallet_sendPreparedCalls` to inspect and sign the authorization separately.
+
+## Chain-specific caveats
+
+### Monad (10 MON reserve balance rule)
+Monad enforces a **10 MON reserve balance** on any EIP-7702-delegated EOA: a delegated account can transfer MON only while its balance stays at `0 MON` or at least `10 MON`. Any UserOperation that would settle the balance to a value strictly between `0` and `10 MON` fails. Gas-sponsored UserOperations that do NOT transfer MON are unaffected.
+
+EIP-7702 on Monad is also **allowlisted** — teams must agree to the balance constraints before access is granted. Contact support@alchemy.com to request access. Confirm allowlist status before shipping a Monad 7702 integration; other error paths (`EIP-7702 not enabled`, `-32602`) can mask access-gating errors.
 
 ## Chain selection
 - For EVM, pass a viem chain object to `createSmartWalletClient({ chain })`. `viem/chains` exports include named entries like `hyperEvm` (HyperEVM mainnet) and `hyperliquidEvmTestnet`. Pass `hyperEvm` directly — no custom chain config needed.
@@ -148,3 +167,5 @@ When users report Wallet API failures, check for these common error patterns:
 - [Solana signer adapters](https://www.alchemy.com/docs/wallets/solana/signers) — `fromKitSigner` / `fromWalletAdapter` / `fromKeypair` / `fromWalletStandard`.
 - [Solana sponsorship](https://www.alchemy.com/docs/wallets/transactions/sponsor-gas/solana) — client-level + per-request paymaster, rent sponsorship rules.
 - [Hyperliquid Transactions Quickstart](https://www.alchemy.com/docs/wallets/recipes/hyperliquid-wallets) — Privy + v5 + non-7702 `requestAccount` pattern on HyperEVM.
+- [Deployed Addresses](https://www.alchemy.com/docs/wallets/reference/deployed-addresses) — Modular Account v2 delegation contracts (v1.0.0 and v1.1.0) plus other on-chain addresses.
+- [EIP-7702 on Monad](https://www.alchemy.com/docs/wallets/transactions/using-eip-7702#monad-support) — the 10 MON reserve rule and allowlist details.
