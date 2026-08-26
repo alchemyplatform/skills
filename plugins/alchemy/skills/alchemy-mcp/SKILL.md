@@ -167,7 +167,7 @@ Standard EVM RPC, Token API, Transfers & Receipts, Transaction Simulation, Trace
 
 | Cluster | Count | Examples |
 |---------|-------|----------|
-| NFT API | 21 | `getNFTsForOwner`, `getNFTMetadata`, `getOwnersForNFT`, `getFloorPrice`, `getNFTSales` |
+| NFT API | 21 | `getNFTsForOwner`, `getNFTMetadata`, `getOwnersForNFT`, `getFloorPrice`, `getNFTsForContract` |
 | Prices API | 3 | `getTokenPricesBySymbol`, `getTokenPricesByAddress`, `getHistoricalTokenPrices` |
 | Portfolio (multi-chain) | 4 | `getTokensByAddress`, `getTokenBalancesByAddress`, `getNFTsByAddress`, `getNFTContractsByAddress` |
 

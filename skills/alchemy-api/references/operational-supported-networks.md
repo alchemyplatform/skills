@@ -9,7 +9,7 @@ tags:
 related:
   - node-json-rpc.md
   - solana-rpc.md
-updated: 2026-05-13
+updated: 2026-08-26
 ---
 # Supported Networks
 
@@ -25,6 +25,12 @@ Alchemy supports multiple EVM, Solana, and UTXO networks. Always verify network 
 - **Bitcoin Cash, Litecoin, Dogecoin** — added as UTXO JSON-RPC chains alongside Bitcoin. Network slugs: `bitcoincash-mainnet`, `bitcoincash-testnet`, `litecoin-mainnet`, `litecoin-testnet`, `dogecoin-mainnet`. All four share the same Bitcoin-Core-style JSON-RPC method set (`getblock`, `sendrawtransaction`, etc.) and a common UTXO REST API (Trezor Blockbook-derived). The UTXO REST surface is mounted under `https://{network}.g.alchemy.com/v2/{apiKey}/api/v2/...` across all seven UTXO networks (the four new ones plus `bitcoin-mainnet` and `bitcoin-testnet4`).
 
 ## Recently Deprecated / Removed
+- **Degen Mainnet** — deprecation notice added 2026-08. Alchemy support for `degen-mainnet` ends **Aug 31, 2026**. `degen-sepolia` is unaffected (pre-release / handled separately). See the [Degen Mainnet deprecation notice](https://www.alchemy.com/docs/reference/degen/degen-deprecation-notice).
+- **Polygon zkEVM Mainnet + Cardona** — full-chain shutdown. `polygonzkevm-mainnet` and `polygonzkevm-cardona` were removed 2026-08 after the July 1, 2026 network shutdown. See the [Polygon zkEVM deprecation notice](https://www.alchemy.com/docs/reference/polygon-zkevm/polygon-zkevm-deprecation-notice).
+- **Botanix Mainnet** — full-chain shutdown 2026-08 post-cutoff removal following the earlier deprecation notice. `botanix-mainnet` is no longer supported. See the [Botanix deprecation notice](https://www.alchemy.com/docs/reference/botanix/botanix-deprecation-notice).
+- **Scroll Sepolia** — support ended **July 30, 2026**. `scroll-sepolia` removed from OpenRPC / OpenAPI specs and supported-chains lists. Scroll Mainnet is unaffected.
+- **Syndicate Manchego** — removed from node-supported-chains 2026-07.
+- **Sonic Blaze** — post-cutoff removal 2026-06. `sonic-mainnet` and `sonic-testnet` are unaffected.
 - **Arbitrum Nova** — deprecated. Nova endpoints (`arbnova-mainnet`, `ARBNOVA_MAINNET`) are no longer supported across Node, Wallets (Bundler, Gas Manager), and related products. See the [Arbitrum Nova deprecation notice](https://www.alchemy.com/docs/reference/arbitrum-nova/arbitrum-nova-deprecation-notice) for migration guidance.
 
 
@@ -77,7 +83,6 @@ INK_SEPOLIA
 ROOTSTOCK_MAINNET
 ROOTSTOCK_TESTNET
 SCROLL_MAINNET
-SCROLL_SEPOLIA
 MONAD_TESTNET
 SONIC_MAINNET
 SONIC_TESTNET
@@ -127,8 +132,6 @@ bob-mainnet
 bob-sepolia
 boba-mainnet
 boba-sepolia
-botanix-mainnet
-botanix-testnet
 celestiabridge-mainnet
 celestiabridge-mocha
 celo-mainnet
@@ -139,7 +142,6 @@ clankermon-mainnet
 commons-mainnet
 crossfi-mainnet
 crossfi-testnet
-degen-mainnet
 degen-sepolia
 dogecoin-mainnet
 earnm-mainnet
@@ -197,8 +199,6 @@ plasma-mainnet
 plasma-testnet
 polygon-amoy
 polygon-mainnet
-polygonzkevm-cardona
-polygonzkevm-mainnet
 polynomial-mainnet
 polynomial-sepolia
 race-mainnet
@@ -210,7 +210,6 @@ ronin-saigon
 rootstock-mainnet
 rootstock-testnet
 scroll-mainnet
-scroll-sepolia
 sei-mainnet
 sei-testnet
 settlus-mainnet
@@ -221,7 +220,6 @@ solana-devnet
 solana-mainnet
 soneium-mainnet
 soneium-minato
-sonic-blaze
 sonic-mainnet
 sonic-testnet
 stable-mainnet
@@ -236,7 +234,6 @@ sui-testnet
 superseed-mainnet
 superseed-sepolia
 synd-mainnet
-syndicate-manchego
 tempo-testnet
 tron-mainnet
 tron-testnet
