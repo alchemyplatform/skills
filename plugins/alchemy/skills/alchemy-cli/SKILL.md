@@ -278,7 +278,7 @@ The CLI's `app` and `usage` commands are thin wrappers over Alchemy's public **A
 | Task | Command |
 |------|---------|
 | Summary of usage over a range | `alchemy usage summary --start-date <YYYY-MM-DD> --end-date <YYYY-MM-DD> [--app-ids <ids>] [--networks <slugs>] [--metrics amount,usd]` |
-| Timeseries of usage over a range | `alchemy usage timeseries --start-date <YYYY-MM-DD> --end-date <YYYY-MM-DD> [--granularity minute\|hour\|day\|month] [--products <ids>] [--metrics amount] [--app-ids <ids>] [--networks <slugs>] [--methods <names>] [--request-types <types>] [--group-by <field>]` |
+| Timeseries of usage over a range | `alchemy usage timeseries --start-date <YYYY-MM-DD> --end-date <YYYY-MM-DD> [--granularity minute\|hour\|day\|month] [--products <ids>] [--metrics amount] [--app-ids <ids>] [--networks <slugs>] [--methods <names>] [--request-types <types>] [--group-by <dim1,dim2,dim3>]` |
 | Timeseries (alias) | `alchemy usage time-series ...` |
 
 **Range limits** on timeseries queries (as of 2026-07-02):
@@ -293,6 +293,12 @@ If the requested range exceeds the plan limit, the CLI does NOT error — it ret
 
 - `alchemy usage timeseries` accepts only `amount`. The `usd` metric is **not** valid on time-series responses (removed 2026-08-13 per API-side change); pass `--metrics amount` or omit the flag.
 - `alchemy usage summary` accepts both `amount` and `usd` (comma-separated) on summary responses.
+
+**`--group-by` semantics** on `alchemy usage timeseries`:
+
+- Accepts **up to three** comma-separated dimensions (e.g. `--group-by app`, `--group-by app,network`, `--group-by app,network,product`). A fourth dimension is rejected server-side.
+- Common shapes: `network` (single-axis), `app,network` (matrix), `app,network,product` (full breakdown). Dimensions must be unique.
+- Not applicable to `alchemy usage summary` — grouping is timeseries-only.
 
 Auth: same browser session as `alchemy app` (Admin API access).
 
