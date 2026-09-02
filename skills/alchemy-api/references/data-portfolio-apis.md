@@ -11,7 +11,7 @@ related:
   - data-nft-api.md
   - data-transfers-api.md
   - recipes-get-portfolio.md
-updated: 2026-02-23
+updated: 2026-09-02
 ---
 # Portfolio APIs
 
@@ -38,6 +38,7 @@ Returns fungible tokens (native + ERC-20 + SPL) with balances, prices, and metad
 | `withPrices` | boolean | No | `true` | Include token prices |
 | `includeNativeTokens` | boolean | No | `true` | Include native tokens (ETH, MATIC, etc.) |
 | `includeErc20Tokens` | boolean | No | `true` | Include ERC-20 tokens |
+| `includeBlockMetadata` | boolean | No | `false` | Include per-network block metadata (block number, hash, timestamp) alongside the token data. See "Block metadata" below. |
 | `pageKey` | string | No | — | Pagination cursor |
 
 ### Request
@@ -131,6 +132,7 @@ Returns raw token balances (without prices/metadata). More efficient when you on
 | `addresses[].networks` | string[] | Yes | — | Network slugs |
 | `includeNativeTokens` | boolean | No | `true` | Include native tokens |
 | `includeErc20Tokens` | boolean | No | `true` | Include ERC-20 tokens |
+| `includeBlockMetadata` | boolean | No | `false` | Include per-network block metadata (block number, hash, timestamp) at the response root. See "Block metadata" below. |
 | `pageKey` | string | No | — | Pagination cursor |
 
 ### Request
@@ -446,6 +448,57 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/transactions
 - NFT metadata can be missing or malformed. Always handle null fields.
 - The Transactions endpoint is in beta and only supports Ethereum and Base mainnets.
 - Paginate large wallets using `pageKey` (for asset endpoints) or `before`/`after` (for transactions).
+
+## Block metadata (`includeBlockMetadata`)
+
+Both multichain token endpoints — `POST /assets/tokens/by-address` and `POST /assets/tokens/balances/by-address` — accept an optional `includeBlockMetadata: true` on the request body. When set, the response carries a top-level `blockMetadata` object keyed by network slug, with the block that each per-network balance snapshot was read at:
+
+```json
+{
+  "data": { "tokens": [ ... ] },
+  "blockMetadata": {
+    "eth-mainnet": {
+      "blockNumber": "0x18a6825",
+      "blockHash": "0xb9587b181217d4c32c45e614d85c92c857dac76b57e15d36fb7d38b27dcecb92",
+      "blockTimestamp": "2026-08-27T16:45:59.000Z"
+    },
+    "matic-mainnet": {
+      "blockNumber": "0x5877288",
+      "blockHash": "0x4ddbc1d12e14909468c49efd2771d1a09dec2850a823e0d9942db54d54633e43",
+      "blockTimestamp": "2026-08-27T16:46:07.000Z"
+    }
+  }
+}
+```
+
+* Default is `false` (opt-in). Requests that omit the flag get the pre-existing response shape.
+* `blockNumber` is `0x`-hex; `blockTimestamp` is ISO-8601 UTC.
+* Only **successful** networks appear in `blockMetadata`. Networks that failed the multichain fan-out show up in `error.partialErrors[]` (see "Partial failures" below) and are absent from `blockMetadata`.
+* `blockMetadata` is the anchor to use when reconciling balances across chains — the snapshot is not guaranteed to be at head; each network's block is captured independently by the fan-out.
+
+## Partial failures
+
+The four multichain fan-out endpoints (`assets/tokens/by-address`, `assets/tokens/balances/by-address`, `assets/nfts/by-address`, `assets/nfts/contracts/by-address`) return **HTTP 200** with an optional `error.partialErrors[]` array when one or more networks in the request fail (upstream error or per-network timeout: ~5s paginated / ~10s fetch-all).
+
+```json
+{
+  "data": { "tokens": [ /* successful networks only */ ] },
+  "error": {
+    "partialErrors": [
+      { "network": "polygon-mainnet", "reason": "upstream_timeout" }
+    ]
+  }
+}
+```
+
+Key semantics:
+
+- `error` is **omitted** (not present-and-null) when every network in the request succeeds. Check for the key's presence, not for null.
+- Networks may **repeat** in `partialErrors` if the same network had multiple failure modes.
+- **Failed networks are dropped from pagination** — subsequent `pageKey` calls do not retry them.
+- Native tokens have `tokenAddress: null`.
+
+Client retry pattern: on receiving `error.partialErrors`, retry only the failed networks in a fresh request (do NOT retry the whole payload — that double-counts costs and rewinds pagination on successful networks). Surface partial data to the user, and cap retries per network.
 
 ## Other ways to access this API
 
