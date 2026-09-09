@@ -8,7 +8,7 @@ tags:
 related:
   - wallets-account-kit.md
   - operational-auth-and-keys.md
-updated: 2026-08-26
+updated: 2026-09-09
 ---
 # Wallet APIs
 
@@ -49,14 +49,31 @@ The v5 stack lives under the `@alchemy/*` scope. Common imports:
 If you see `expected bigint, got string`, you're passing a hex string to the SDK — convert via `BigInt(hex)` or use viem helpers.
 
 ## EIP-7702 delegation contracts
-Wallet APIs accept two Modular Account v2 delegation contracts. Any other delegation address is rejected on `wallet_prepareCalls`:
+Wallet APIs accept two `SemiModularAccount7702` delegation contracts. Any other delegation address is rejected on `wallet_prepareCalls`:
 
-| Version | Contract address |
-|---|---|
-| v1.0.0 | `0x69007702764179f14F51cdce752f4f775d74E139` |
-| v1.1.0 | `0x77021100bD87b7008E5E1989d0eB38555d0d0000` |
+| Version | Delegate address | `accountId()` |
+|---|---|---|
+| v1.0.0 | `0x69007702764179f14F51cdce752f4f775d74E139` | `alchemy.sma-7702.1.0.0` |
+| v1.1.0 | `0x77021100bD87b7008E5E1989d0eB38555d0d0000` | `alchemy.sma-7702.1.1.0` |
 
-v1.1.0 shipped in 2026-08 alongside v1.0.0. New accounts default to v1.1.0 where available; already-delegated accounts stay on their current version until re-delegated. Both point at `SemiModularAccount7702`. The set of accepted delegation addresses is not user-configurable — verify the target address is one of the two above before signing an authorization.
+**Default:** v1.0.0 today. On **September 21, 2026** the default flips to v1.1.0 for new EIP-7702 accounts created through `wallet_prepareCalls` or `wallet_requestAccount`. Existing accounts keep their recorded delegate and do NOT need to sign a new authorization. If your app validates delegation addresses or `accountId()`, allowlist BOTH values before rollout — accept both rather than replacing v1.0.0.
+
+**Pick a version explicitly** via `capabilities.eip7702Auth` on `wallet_prepareCalls`:
+
+```json
+{
+  "capabilities": {
+    "eip7702Auth": {
+      "delegation": "ModularAccountV2",
+      "version": "v1.1.0"
+    }
+  }
+}
+```
+
+Use `"version": "v1.0.0"` to pin a new account to v1.0.0 after the flip. You can also pass a supported `SemiModularAccount7702` delegate address directly as `delegation`. Explicitly requesting a version RE-DELEGATES an already-delegated account when it currently uses a different version; after that, later calls continue on the account's recorded delegate unless another version is explicitly requested.
+
+v1.1.0 adds a standard EOA signature path through ERC-1271 (audited by Octane), improving Permit2 and similar compatibility without a new signer or authority path.
 
 Undelegating restores the EOA by delegating to `0x0000000000000000000000000000000000000000`.
 
