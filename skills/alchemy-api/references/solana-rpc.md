@@ -9,7 +9,7 @@ tags:
 related:
   - solana-das-api.md
   - solana-wallets.md
-updated: 2026-08-24
+updated: 2026-09-16
 ---
 # Solana JSON-RPC
 
@@ -263,6 +263,49 @@ Prefer `getTransactionsForAddress` over `getSignaturesForAddress` + per-signatur
 
 ---
 
+## `getTokenAccountsByOwnerV2`
+
+Helius-compatible successor to `getTokenAccountsByOwner` with server-side pagination and incremental sync. Same base params as V1 (`owner` Pubkey; filter `{mint}` OR `{programId}`; optional `commitment`, `minContextSlot`, `encoding`, `dataSlice`) plus these additions on the config object:
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `owner` | string | Yes | — | Base58 Pubkey of the wallet |
+| `filter` | object | Yes | — | `{ mint: <Pubkey> }` OR `{ programId: <Pubkey> }`. Same either-or rule as V1. |
+| `config.limit` | integer | No | `1000` | 1–10,000. Maximum token accounts per page. |
+| `config.paginationKey` | string | No | — | Base-58 cursor returned by a prior response. Omit on the first call. |
+| `config.changedSinceSlot` | integer | No | — | Only return token accounts whose `slot > changedSinceSlot`. Enables incremental sync. |
+| `config.withContext` | boolean | No | `false` | If `true`, wraps the result in the standard `{context, value}` envelope; otherwise returns the bare page. |
+
+**Result shape** (`oneOf`):
+
+* `withContext: false | omitted` → `result.value` is the token-account array (same items as V1); `paginationKey` sits on `result` next to `value`.
+* `withContext: true` → `{ context: {slot, apiVersion}, value: { accounts: [...], paginationKey: <string|null> } }` — token accounts move under `value.accounts` and the cursor moves under `value.paginationKey`.
+
+Each token-account entry uses the `jsonParsed` shape (matches V1). `paginationKey` is `null` on the last page.
+
+Priced identically to `getTokenAccountsByOwner` (10 CU). Use V2 whenever you need to page through a large wallet, or want to incrementally sync only the accounts written after a known slot. V1 stays supported; both live on the same standard endpoint.
+
+### Request
+
+```bash
+curl -s -X POST https://solana-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "getTokenAccountsByOwnerV2",
+    "params": [
+      "GwsPP9HHhCvEQeu3HTFzsVL6DEtnnYw4ALEtA3fMBC9Q",
+      { "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" },
+      { "encoding": "jsonParsed", "limit": 100 }
+    ]
+  }'
+```
+
+Page through by re-sending the same params plus `paginationKey: <cursor>` from the prior response until the returned `paginationKey` is `null`. Combine `limit` with `changedSinceSlot` to keep a downstream portfolio index in sync without re-scanning the full owner tree on every tick.
+
+---
+
 ## Other Common Methods
 
 | Method | Description |
@@ -274,7 +317,8 @@ Prefer `getTransactionsForAddress` over `getSignaturesForAddress` + per-signatur
 | `sendTransaction` | Submit a signed transaction |
 | `simulateTransaction` | Simulate a transaction |
 | `getProgramAccounts` | Accounts owned by a program |
-| `getTokenAccountsByOwner` | SPL token accounts for a wallet |
+| `getTokenAccountsByOwner` | SPL token accounts for a wallet (V1) |
+| `getTokenAccountsByOwnerV2` | Same, with server-side pagination + `changedSinceSlot` |
 
 ---
 
