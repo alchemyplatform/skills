@@ -9,7 +9,7 @@ tags:
 related:
   - node-json-rpc.md
   - solana-rpc.md
-updated: 2026-08-26
+updated: 2026-09-16
 ---
 # Supported Networks
 
@@ -110,6 +110,7 @@ aptos-mainnet
 aptos-testnet
 arb-mainnet
 arb-sepolia
+arc-mainnet
 arc-testnet
 astar-mainnet
 avax-fuji
