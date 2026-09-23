@@ -9,7 +9,7 @@ tags:
 related:
   - node-enhanced-apis.md
   - recipes-get-transfers-history.md
-updated: 2026-02-23
+updated: 2026-09-23
 ---
 # Transfers API
 
@@ -17,7 +17,7 @@ Query historical transfers across ERC-20, ERC-721, ERC-1155, and native transfer
 
 **Base URL**: `https://<network>.g.alchemy.com/v2/$ALCHEMY_API_KEY`
 
-**Supported chains**: Ethereum, Base, Polygon, Arbitrum, Optimism (and testnets). `internal` category only available on Ethereum Mainnet and Polygon Mainnet.
+**Supported chains**: Ethereum, Base, Polygon, Arbitrum, Optimism (and testnets), plus additional EVM networks — check the [official docs](https://www.alchemy.com/docs/reference/alchemy-getassettransfers) for the current list. `internal` category is only available on Ethereum Mainnet, Polygon Mainnet, Base Mainnet, Arc Mainnet, and Arc Testnet.
 
 ---
 
@@ -126,7 +126,7 @@ curl -s -X POST https://eth-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
 - `fromAddress` and `toAddress` are optional but at least one filter (address, contract, or block range) is recommended to avoid large result sets.
 - `pageKey` has a 10-minute TTL. Fetch subsequent pages promptly.
 - Use narrow block ranges for polling patterns to reduce compute unit usage.
-- The `internal` category tracks internal EVM calls and is only available on Ethereum Mainnet and Polygon Mainnet.
+- The `internal` category tracks internal EVM calls and is only available on Ethereum Mainnet, Polygon Mainnet, Base Mainnet, Arc Mainnet, and Arc Testnet. `delegatecall` internal transfers and miner-reward internal transfers are not tracked.
 
 ## Other ways to access this API
 
