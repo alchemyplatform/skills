@@ -10,7 +10,7 @@ related:
   - webhooks-webhook-payloads.md
   - webhooks-verify-signatures.md
   - data-transfers-api.md
-updated: 2026-04-15
+updated: 2026-09-22
 ---
 # Address Activity Webhooks
 
@@ -36,10 +36,13 @@ Update addresses (`PATCH /update-webhook-addresses`) with:
 - Supports 30+ EVM chains (ETH, ERC-20, ERC-721, ERC-1155 transfers).
 - Now available on Solana (no longer beta).
 
+### Internal transfer support
+Internal transfers (from smart contracts, not just EOAs) are only emitted on a subset of chains. Currently: Ethereum (Mainnet, Sepolia), Polygon (Mainnet, Amoy), Arbitrum (Mainnet, Sepolia), Optimism (Mainnet, Sepolia), Base (Mainnet, Sepolia), BNB Chain (Mainnet, Testnet), Avalanche (Mainnet, Fuji), Robinhood Chain (Mainnet, Testnet), and **Arc (Mainnet, Testnet)**. `delegatecall` internal transfers and internal transfer miner rewards are never emitted.
+
 ## Configuration Notes
 - Provide one or more addresses to watch.
 - Choose event categories (native, ERC-20, ERC-721, ERC-1155).
-- Decide if you need internal transfers.
+- Decide if you need internal transfers (see chain list above).
 - Maximum of 100,000 addresses per webhook.
 
 ## Payload Expectations
