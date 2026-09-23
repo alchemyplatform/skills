@@ -9,7 +9,7 @@ tags:
 related:
   - node-json-rpc.md
   - solana-rpc.md
-updated: 2026-08-26
+updated: 2026-09-22
 ---
 # Supported Networks
 
@@ -22,6 +22,8 @@ Alchemy supports multiple EVM, Solana, and UTXO networks. Always verify network 
 - Not all products are available on every chain.
 
 ## Recently Added
+- **Arc Mainnet** — Alchemy now supports both Arc Mainnet (`arc-mainnet`) and Arc Testnet (`arc-testnet`) across Node, Wallets, and Data APIs. Base URLs: `https://arc-mainnet.g.alchemy.com/v2/{apiKey}` and `https://arc-testnet.g.alchemy.com/v2/{apiKey}`. Arc is Circle's L1 with USDC as the native gas token. Both networks now support **internal transfers** on the Address Activity webhook and on Portfolio Transfers.
+- **Giwa Sepolia** (chain ID `91342`) — New Ethereum L2 optimistic rollup built on the OP Stack by Dunamu (parent of Upbit). ~1-second block times, full EVM compatibility, ETH as gas. Base URL: `https://giwa-sepolia.g.alchemy.com/v2/{apiKey}`. Debug and Trace APIs are also supported. Giwa mainnet has not launched yet. `viem` exports `giwaSepolia` and `giwaSepoliaPreconf` chain definitions.
 - **Bitcoin Cash, Litecoin, Dogecoin** — added as UTXO JSON-RPC chains alongside Bitcoin. Network slugs: `bitcoincash-mainnet`, `bitcoincash-testnet`, `litecoin-mainnet`, `litecoin-testnet`, `dogecoin-mainnet`. All four share the same Bitcoin-Core-style JSON-RPC method set (`getblock`, `sendrawtransaction`, etc.) and a common UTXO REST API (Trezor Blockbook-derived). The UTXO REST surface is mounted under `https://{network}.g.alchemy.com/v2/{apiKey}/api/v2/...` across all seven UTXO networks (the four new ones plus `bitcoin-mainnet` and `bitcoin-testnet4`).
 
 ## Recently Deprecated / Removed
@@ -110,6 +112,7 @@ aptos-mainnet
 aptos-testnet
 arb-mainnet
 arb-sepolia
+arc-mainnet
 arc-testnet
 astar-mainnet
 avax-fuji
@@ -164,6 +167,7 @@ galactica-cassiopeia
 galactica-mainnet
 gensyn-mainnet
 gensyn-testnet
+giwa-sepolia
 gnosis-chiado
 gnosis-mainnet
 humanity-mainnet

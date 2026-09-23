@@ -9,7 +9,7 @@ tags:
 related:
   - solana-das-api.md
   - solana-wallets.md
-updated: 2026-08-24
+updated: 2026-09-22
 ---
 # Solana JSON-RPC
 
@@ -263,6 +263,64 @@ Prefer `getTransactionsForAddress` over `getSignaturesForAddress` + per-signatur
 
 ---
 
+## `getTokenAccountsByOwnerV2`
+
+Paginated variant of `getTokenAccountsByOwner`. Use this when a wallet holds enough token accounts that the single-response version times out or hits memory limits — indexing every SPL Token or Token-2022 account for an active wallet, backing a portfolio dashboard, or keeping a downstream cache aligned with recent on-chain changes.
+
+Accepts the same `commitment`, `minContextSlot`, `encoding`, and `dataSlice` fields as `getTokenAccountsByOwner`, plus:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `config.limit` | integer | Page size, 1–10,000. Default `1000`. |
+| `config.paginationKey` | string | Base-58 cursor from the previous page. Omit on the first request. |
+| `config.changedSinceSlot` | integer | Only return accounts written at or after this slot. Use for incremental sync. |
+| `config.withContext` | boolean | When `true`, wraps the page in the standard Solana `{context, value}` shape. |
+
+Filter is still required: pass either `{ mint }` (specific SPL Token or Token-2022 mint) or `{ programId }` (SPL Token or Token-2022 program). Querying every token type for a wallet with no filter is not supported.
+
+Keep paging while `paginationKey` is a string. It turns `null` only when the server has no more accounts. **A page shorter than `limit` does NOT mean you're done** — server-side filters can drop accounts before the page ships.
+
+Compute units: 10 (same as V1).
+
+---
+
+## `getTokenHoldersAtSlot`
+
+Returns the token accounts holding a single SPL Token or Token-2022 mint at a specific slot, ranked by balance. Solana mainnet only. `paramStructure: by-name` — send `params` as an object.
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `mint` | string | Yes | — | Base-58 mint pubkey (SPL Token or Token-2022). |
+| `slot` | integer | Yes | — | Slot to reconstruct holders at. **No "latest" default** — omitting `slot` is an error. |
+| `limit` | integer | No | `1000` | How many holders to return. Server ceiling `10000`. |
+| `sortBy` | string | No | — | `balance_desc` or `balance_asc`. Case-sensitive. `sort_by` accepted as alias. |
+
+### Response
+
+```json
+{
+  "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "slot": 430276235,
+  "sortBy": "balance_desc",
+  "holders": [
+    {
+      "holder": "3emsAVdmGKERbHjmGfQ6oZ1e35dkf5iYcS6U4CPKFVaa",
+      "owner": "7VHUFJHWu2CuExkJcJrzhQPJ2oygupTWkL2A2For4BmE",
+      "balanceRaw": "974620712305381",
+      "balanceUi": "974620712.305381"
+    }
+  ]
+}
+```
+
+`holder` is the token account pubkey; `owner` is the wallet that controls it. Point-in-time coverage matches the Account Archive service (from July 2025 forward).
+
+Common errors: `-32602` for a missing/malformed `mint`, missing `slot`, non-integer `limit`, unknown `sortBy` value, or a mint not present in the index.
+
+---
+
 ## Other Common Methods
 
 | Method | Description |
@@ -275,6 +333,8 @@ Prefer `getTransactionsForAddress` over `getSignaturesForAddress` + per-signatur
 | `simulateTransaction` | Simulate a transaction |
 | `getProgramAccounts` | Accounts owned by a program |
 | `getTokenAccountsByOwner` | SPL token accounts for a wallet |
+| `getTokenAccountsByOwnerV2` | Paginated SPL token accounts for a wallet (see above) |
+| `getTokenHoldersAtSlot` | Ranked list of a mint's holders at a specific slot (see above) |
 
 ---
 
