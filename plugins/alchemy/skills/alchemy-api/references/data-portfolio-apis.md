@@ -11,7 +11,7 @@ related:
   - data-nft-api.md
   - data-transfers-api.md
   - recipes-get-portfolio.md
-updated: 2026-02-23
+updated: 2026-09-23
 ---
 # Portfolio APIs
 
@@ -358,32 +358,45 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/assets/nfts/
 
 ---
 
-## `POST /transactions/history/by-address` (Beta)
+## `POST /transfers/by-address` (Beta)
 
-Returns transaction history for a wallet across networks.
+Returns historical transfers (native, ERC-20, ERC-721, ERC-1155, special NFT, and internal) for a single wallet address across multiple EVM networks, merged and ordered by `blockTimestamp`. This endpoint replaces the earlier `POST /transactions/history/by-address` beta.
+
+**Beta:** Do not rely on this endpoint in production. Access is currently gated — email [data_apis@alchemy.com](mailto:data_apis@alchemy.com) to request access.
 
 ### Parameters
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `addresses` | array | Yes | — | Wallet/network pairs (max 1 pair, max 2 networks) |
-| `addresses[].address` | string | Yes | — | Wallet address |
-| `addresses[].networks` | string[] | Yes | — | Network slugs (beta: `eth-mainnet`, `base-mainnet` only) |
-| `before` | string | No | — | Cursor for previous page |
-| `after` | string | No | — | Cursor for next page |
-| `limit` | integer | No | `25` | Results per page (max 50) |
+| `address` | string | Yes | — | Single wallet address (not an array) |
+| `category` | string[] | Yes | — | One or more of `external`, `internal`, `erc20`, `erc721`, `erc1155`, `specialnft`. Empty array is rejected. |
+| `networks` | string[] | No | `["eth-mainnet", "base-mainnet", "matic-mainnet"]` | Up to 5 networks per request. |
+| `direction` | string | No | `both` | `to`, `from`, or `both`. Filters transfers by which side `address` appears on. |
+| `fromTimestamp` | string | No | genesis | ISO-8601 timestamp (inclusive lower bound). |
+| `toTimestamp` | string | No | now | ISO-8601 timestamp (inclusive upper bound). |
+| `order` | string | No | `desc` | `asc` or `desc` by `blockTimestamp`. |
+| `contractAddresses` | string[] | No | — | Filter to specific token contracts. Applies to `erc20`, `erc721`, `erc1155`, `specialnft`. |
+| `excludeZeroValue` | boolean | No | `true` | Exclude zero-value transfers. |
+| `maxCount` | integer | No | `100` | Page size. |
+| `pageKey` | string | No | — | Opaque cursor from a prior response. |
+
+**Supported networks (14 EVM):** `eth-mainnet`, `matic-mainnet`, `arb-mainnet`, `opt-mainnet`, `base-mainnet`, `bnb-mainnet`, `celo-mainnet`, `ronin-mainnet`, `monad-mainnet`, `monad-testnet`, `robinhood-mainnet`, `robinhood-testnet`, `arc-mainnet`, `arc-testnet`.
+
+**`internal` category coverage:** narrower than the others — only `eth-mainnet`, `base-mainnet`, `matic-mainnet`, `arc-mainnet`, and `arc-testnet`. Requesting `internal` alongside networks outside that set returns transfers only from the supported subset (the other networks succeed but emit no internal transfers).
 
 ### Request
 
 ```bash
-curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/transactions/history/by-address" \
+curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/transfers/by-address" \
   -H "Content-Type: application/json" \
   -d '{
-    "addresses": [{
-      "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-      "networks": ["eth-mainnet"]
-    }],
-    "limit": 5
+    "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "networks": ["eth-mainnet", "base-mainnet", "matic-mainnet"],
+    "category": ["external", "erc20", "erc721", "erc1155"],
+    "fromTimestamp": "2026-08-01T00:00:00Z",
+    "toTimestamp": "2026-08-06T00:00:00Z",
+    "order": "desc",
+    "maxCount": 100
   }'
 ```
 
@@ -391,29 +404,35 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/transactions
 
 ```json
 {
-  "transactions": [
+  "transfers": [
     {
-      "network": "eth-mainnet",
-      "hash": "0x3847245c01829b043431067fb2bfa95f7b5bdc7e...",
-      "timeStamp": "2025-06-01T10:30:00.000Z",
-      "blockNumber": "20000000",
-      "blockHash": "0x...",
-      "nonce": "42",
-      "transactionIndex": "5",
-      "fromAddress": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-      "toAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-      "contractAddress": null,
-      "value": "0",
-      "gasUsed": "46000",
-      "effectiveGasPrice": "15000000000",
-      "cumulativeGasUsed": "1234567",
-      "logs": [],
-      "internalTxns": []
+      "network": "base-mainnet",
+      "blockNum": "0x1410a3b",
+      "blockTimestamp": "2026-08-05T23:58:41Z",
+      "category": "erc20",
+      "hash": "0xabc123...",
+      "from": "0x1f98abcd...",
+      "to": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+      "contractAddress": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "uniqueId": "0xabc123...:log:12",
+      "fungible": { "rawValue": "0xee6b2800", "value": 250.0, "decimals": 6, "asset": "USDC" },
+      "nfts": null
+    },
+    {
+      "network": "base-mainnet",
+      "blockNum": "0x1410a10",
+      "blockTimestamp": "2026-08-05T23:50:03Z",
+      "category": "erc721",
+      "hash": "0x9a8b7c...",
+      "from": "0x0000000000000000000000000000000000000000",
+      "to": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+      "contractAddress": "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+      "uniqueId": "0x9a8b7c...:log:0",
+      "fungible": null,
+      "nfts": { "tokens": [{ "tokenId": "0x1a4", "amount": "1" }] }
     }
   ],
-  "before": "cursor_prev...",
-  "after": "cursor_next...",
-  "totalCount": 500
+  "pageKey": "eyJ0cyI6IjIw..."
 }
 ```
 
@@ -421,22 +440,24 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/transactions
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `transactions` | array | Transaction objects |
-| `transactions[].network` | string | Network slug |
-| `transactions[].hash` | string | Transaction hash |
-| `transactions[].timeStamp` | string | ISO 8601 timestamp |
-| `transactions[].blockNumber` | string | Block number |
-| `transactions[].fromAddress` | string | Sender address |
-| `transactions[].toAddress` | string | Recipient address |
-| `transactions[].contractAddress` | string | Deployed contract address (null if not a deployment) |
-| `transactions[].value` | string | ETH value transferred |
-| `transactions[].gasUsed` | string | Gas used |
-| `transactions[].effectiveGasPrice` | string | Effective gas price |
-| `transactions[].logs` | array | Event logs |
-| `transactions[].internalTxns` | array | Internal transactions |
-| `before` | string | Cursor for previous page |
-| `after` | string | Cursor for next page |
-| `totalCount` | integer | Total transactions |
+| `transfers[]` | array | Transfers merged across all requested networks, sorted by `blockTimestamp`. Empty array if nothing matches. |
+| `transfers[].network` | string | Network the transfer occurred on. |
+| `transfers[].blockNum` | string | Block number as hex — not comparable across networks. |
+| `transfers[].blockTimestamp` | string | ISO-8601 block timestamp. Cross-chain sort key; always returned. |
+| `transfers[].category` | string | `external`, `internal`, `erc20`, `erc721`, `erc1155`, or `specialnft`. |
+| `transfers[].hash` | string | Transaction hash. |
+| `transfers[].from` | string | Sender. |
+| `transfers[].to` | string \| null | Recipient. `null` on contract creation. |
+| `transfers[].contractAddress` | string \| null | Token contract address. `null` for native-token transfers. |
+| `transfers[].uniqueId` | string | Stable per-transfer id. Formats: `{hash}:log:{logIndex}` (erc20/721/1155/specialnft), `{hash}:external`, `{hash}:internal:{traceAddress}`. |
+| `transfers[].fungible` | object \| null | Populated for `external`, `internal`, `erc20`. Fields: `rawValue` (hex), `value` (number, scaled), `decimals`, `asset`. Any inner field can be `null` if metadata is missing. |
+| `transfers[].nfts` | object \| null | Populated for `erc721`, `erc1155`, `specialnft`. `tokens[]` with `tokenId` (hex) + `amount`. |
+| `pageKey` | string \| null | Cursor for next page. `null` when no more pages. |
+| `error.partialErrors[]` | array | Present only when one or more networks failed. Each entry has `network`, `state` (e.g. `timeout`), `message`. |
+
+### Handling partial failures
+
+Multichain fan-out endpoints return HTTP 200 even when some networks fail. When every network succeeds the `error` key is OMITTED (not present-and-null). Failed networks are dropped from pagination — retry them in a fresh request. See the shared partial-failure pattern below.
 
 ---
 
@@ -444,8 +465,8 @@ curl -s -X POST "https://api.g.alchemy.com/data/v1/$ALCHEMY_API_KEY/transactions
 
 - Use the smallest `networks` list you need — each network adds to response time.
 - NFT metadata can be missing or malformed. Always handle null fields.
-- The Transactions endpoint is in beta and only supports Ethereum and Base mainnets.
-- Paginate large wallets using `pageKey` (for asset endpoints) or `before`/`after` (for transactions).
+- The Transfers By Wallet endpoint is in beta (email `data_apis@alchemy.com` for access) and supports 14 EVM networks — see the endpoint parameter table for the full list.
+- Paginate large wallets using `pageKey` (for asset endpoints and `/transfers/by-address`) or `before`/`after` (for legacy transaction endpoints).
 
 ## Other ways to access this API
 
@@ -458,7 +479,7 @@ This file is part of the `alchemy-api` skill — for app code that ships with an
   alchemy portfolio nfts --body '{"addresses":[{"address":"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045","networks":["eth-mainnet"]}]}'
   alchemy portfolio nft-contracts --body '{"addresses":[{"address":"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045","networks":["eth-mainnet"]}]}'
   ```
-  Note: the CLI does not (yet) wrap the Beta `transactions/history/by-address` endpoint; call it via HTTP using the `alchemy-api` API-key URL or the gateway URLs below.
+  Note: the CLI does not wrap the Beta `/transfers/by-address` endpoint yet; call it via HTTP using the `alchemy-api` API-key URL or the gateway URLs below.
 
 - **Live agent work via MCP** (when MCP is wired into your client and the CLI is not installed — see the `alchemy-mcp` skill). Call `select_app` first, then any of:
   `getTokensByAddress`, `getTokenBalancesByAddress`, `getNFTsByAddress`, `getNFTContractsByAddress` (full list in the `alchemy-mcp` skill catalog).
@@ -471,4 +492,4 @@ This file is part of the `alchemy-api` skill — for app code that ships with an
 - [Token Balances by Address](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-token-balances-by-address)
 - [NFTs by Address](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nfts-by-address)
 - [NFT Contracts by Address](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nft-contracts-by-address)
-- [Transaction History by Address (Beta)](https://www.alchemy.com/docs/data/beta-apis/beta-api-endpoints/beta-api-endpoints/get-transaction-history-by-address)
+- [Transfers by Wallet (Beta)](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-transfers-by-address)
