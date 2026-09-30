@@ -302,6 +302,8 @@ Three mutually-exclusive optional params control the archival lookup (all three 
 
 Omit all three params for latest-state (drop-in superset behavior with the standard methods).
 
+**Plan availability:** the historical params (`slot`, `lastUpdateBeforeSlot`, `firstUpdateAfterSlot`) are gated to **paid plans only** (pay-as-you-go or enterprise). On the free tier, requests that include any of the three fail; latest-state calls (no archival params) still work on every plan. Same gating applies to `getBalance` and `getTokenAccountBalance` when `slot` is supplied. Point the user at a paid plan or drop the archival param before falling back to standard live reads.
+
 **Error codes**:
 - `-32020` — Slot out of coverage (below the earliest indexed slot, or above the latest known slot).
 - `-32602` — Invalid params (mutual exclusion violated, or unsupported archive param for this method).

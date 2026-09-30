@@ -10,7 +10,7 @@ related:
   - data-token-api.md
   - data-nft-api.md
   - data-transfers-api.md
-updated: 2026-02-23
+updated: 2026-09-30
 ---
 # Portfolio APIs
 
@@ -18,7 +18,7 @@ Consolidated wallet views (tokens, NFTs, transaction history) across multiple ne
 
 **Base URL**: `https://x402.alchemy.com/data/v1/`
 
-**Supported chains** (in `networks` array): `eth-mainnet`, `base-mainnet`, `polygon-mainnet`, `arb-mainnet`, `opt-mainnet`, `sol-mainnet`, and more.
+**Supported chains** (in `networks` array): `eth-mainnet`, `base-mainnet`, `matic-mainnet`, `arb-mainnet`, `opt-mainnet`, `sol-mainnet`, and more.
 
 ---
 
@@ -142,7 +142,7 @@ curl -s -X POST "https://x402.alchemy.com/data/v1/assets/tokens/balances/by-addr
   -d '{
     "addresses": [{
       "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-      "networks": ["eth-mainnet", "base-mainnet", "arb-mainnet", "opt-mainnet", "polygon-mainnet"]
+      "networks": ["eth-mainnet", "base-mainnet", "arb-mainnet", "opt-mainnet", "matic-mainnet"]
     }]
   }'
 ```
@@ -361,95 +361,11 @@ curl -s -X POST "https://x402.alchemy.com/data/v1/assets/nfts/contracts/by-addre
 
 ---
 
-## `POST /transactions/history/by-address` (Beta)
-
-Returns transaction history for a wallet across networks.
-
-### Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `addresses` | array | Yes | — | Wallet/network pairs (max 1 pair, max 2 networks) |
-| `addresses[].address` | string | Yes | — | Wallet address |
-| `addresses[].networks` | string[] | Yes | — | Network slugs (beta: `eth-mainnet`, `base-mainnet` only) |
-| `before` | string | No | — | Cursor for previous page |
-| `after` | string | No | — | Cursor for next page |
-| `limit` | integer | No | `25` | Results per page (max 50) |
-
-### Request
-
-```bash
-curl -s -X POST "https://x402.alchemy.com/data/v1/transactions/history/by-address" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: SIWE $TOKEN" \
-  -d '{
-    "addresses": [{
-      "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-      "networks": ["eth-mainnet"]
-    }],
-    "limit": 5
-  }'
-```
-
-### Response
-
-```json
-{
-  "transactions": [
-    {
-      "network": "eth-mainnet",
-      "hash": "0x3847245c01829b043431067fb2bfa95f7b5bdc7e...",
-      "timeStamp": "2025-06-01T10:30:00.000Z",
-      "blockNumber": "20000000",
-      "blockHash": "0x...",
-      "nonce": "42",
-      "transactionIndex": "5",
-      "fromAddress": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-      "toAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-      "contractAddress": null,
-      "value": "0",
-      "gasUsed": "46000",
-      "effectiveGasPrice": "15000000000",
-      "cumulativeGasUsed": "1234567",
-      "logs": [],
-      "internalTxns": []
-    }
-  ],
-  "before": "cursor_prev...",
-  "after": "cursor_next...",
-  "totalCount": 500
-}
-```
-
-### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `transactions` | array | Transaction objects |
-| `transactions[].network` | string | Network slug |
-| `transactions[].hash` | string | Transaction hash |
-| `transactions[].timeStamp` | string | ISO 8601 timestamp |
-| `transactions[].blockNumber` | string | Block number |
-| `transactions[].fromAddress` | string | Sender address |
-| `transactions[].toAddress` | string | Recipient address |
-| `transactions[].contractAddress` | string | Deployed contract address (null if not a deployment) |
-| `transactions[].value` | string | ETH value transferred |
-| `transactions[].gasUsed` | string | Gas used |
-| `transactions[].effectiveGasPrice` | string | Effective gas price |
-| `transactions[].logs` | array | Event logs |
-| `transactions[].internalTxns` | array | Internal transactions |
-| `before` | string | Cursor for previous page |
-| `after` | string | Cursor for next page |
-| `totalCount` | integer | Total transactions |
-
----
-
 ## Notes
 
 - Use the smallest `networks` list you need — each network adds to response time.
 - NFT metadata can be missing or malformed. Always handle null fields.
-- The Transactions endpoint is in beta and only supports Ethereum and Base mainnets.
-- Paginate large wallets using `pageKey` (for asset endpoints) or `before`/`after` (for transactions).
+- Paginate large wallets using `pageKey`.
 
 ## Other ways to access this API
 
@@ -474,4 +390,3 @@ This file is part of the `agentic-gateway` skill — for app code that pays per-
 - [Token Balances by Address](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-token-balances-by-address)
 - [NFTs by Address](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nfts-by-address)
 - [NFT Contracts by Address](https://www.alchemy.com/docs/data/portfolio-apis/portfolio-api-endpoints/portfolio-api-endpoints/get-nft-contracts-by-address)
-- [Transaction History by Address (Beta)](https://www.alchemy.com/docs/data/beta-apis/beta-api-endpoints/beta-api-endpoints/get-transaction-history-by-address)
