@@ -1,4 +1,7 @@
-interface:
+mkdir ai-agent
+echo 'ALCHEMY_API_KEY=alch_ERIHesFdSEnVoQbMbx1Zp' >> ai-agent/.env
+cd ai-agent
+npx -y skills@1.5.17 add alchemyplatform/skills --skill alchemy-api -g -a cursor -yinterface:
   display_name: "Alchemy Agentic Gateway"
   short_description: "App-code Alchemy access via x402 or MPP, no API key needed"
   default_prompt: "Build an app that uses the Alchemy gateway with wallet-based auth and per-request payments — guide me through x402 vs MPP."
