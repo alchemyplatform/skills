@@ -4,14 +4,18 @@
 
 ## Endpoints
 
-All endpoints require SIWE or SIWS auth and an x402 payment on the first call per auth token.
+All endpoints accept either SIWE/SIWS auth (x402 payment on the first call per auth token, then drawn from credit) or anonymous pay-per-request (x402 payment on every call, no auth). See pricing below.
 
-| Route | Method | Description |
-|-------|--------|-------------|
-| `/:chainNetwork/v2` | POST | Node JSON-RPC — standard RPC methods plus Token API, Transfers API, and Simulation API (via JSON-RPC) |
-| `/:chainNetwork/nft/v3/*` | GET/POST | [NFT API v3](https://www.alchemy.com/docs/reference/nft-api-quickstart) — REST endpoints for NFT data |
-| `/data/v1/assets/*` | POST | [Portfolio API](https://www.alchemy.com/docs/reference/portfolio-apis) — multi-chain portfolio data (not chain-specific) |
-| `/prices/v1/tokens/*` | GET/POST | [Prices API](https://www.alchemy.com/docs/reference/prices-api-quickstart) — token prices, historical prices (GET for current by symbol, POST for by-address and historical) |
+| Route | Method | Description | Authenticated payment (SIWE/SIWS) | Pay-per-request (no auth) |
+|-------|--------|-------------|-----------------------------------|---------------------------|
+| `/:chainNetwork/v2` | POST | Node JSON-RPC — standard RPC methods plus Token API, Transfers API, and Simulation API (via JSON-RPC) | $1.00 USDC → $1.00 credit | $0.001 USDC |
+| `/:chainNetwork/nft/v3/*` | GET/POST | [NFT API v3](https://www.alchemy.com/docs/reference/nft-api-quickstart) — REST endpoints for NFT data | $1.00 USDC → $1.00 credit | $0.001 USDC |
+| `/data/v1/assets/*` | POST | [Portfolio API](https://www.alchemy.com/docs/reference/portfolio-apis) — multi-chain portfolio data (not chain-specific) | $1.00 USDC → $1.00 credit | $0.001 USDC |
+| `/prices/v1/tokens/*` | GET/POST | [Prices API](https://www.alchemy.com/docs/reference/prices-api-quickstart) — token prices, historical prices (GET for current by symbol, POST for by-address and historical) | $1.00 USDC → $1.00 credit | $0.001 USDC |
+
+**Pricing:**
+- **Authenticated payment** — when a SIWE/SIWS-authenticated wallet has no account or has run out of credit, the gateway returns 402 for $1.00 USDC. Paying it purchases $1.00 of credit, which is then drawn down per request at standard [compute unit costs](https://www.alchemy.com/docs/reference/compute-unit-costs). Subsequent requests with the same auth token are proxied without payment until credit is exhausted.
+- **Pay-per-request** — requests with no `Authorization` header receive a 402 for $0.001 USDC per request. Each request must carry its own `Payment-Signature`; no account is created.
 
 **Base URL**: `https://x402.alchemy.com`
 
@@ -64,6 +68,7 @@ Payments are made on these networks (independent of which chain you're querying)
 |---------|-----------|--------------|---------------------|
 | Base Sepolia (testnet) | `eip155:84532` | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | `USDC` |
 | Base Mainnet | `eip155:8453` | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | `USD Coin` |
+| Monad Mainnet | `eip155:143` | `0x754704Bc059F8C67012fEd69BC8A327a5aafb603` | `USD Coin` |
 
 ### SVM Payment Networks
 
