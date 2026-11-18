@@ -8,7 +8,7 @@ tags:
 related:
   - wallets-account-kit.md
   - operational-auth-and-keys.md
-updated: 2026-08-26
+updated: 2026-09-02
 ---
 # Wallet APIs
 
@@ -56,7 +56,14 @@ Wallet APIs accept two Modular Account v2 delegation contracts. Any other delega
 | v1.0.0 | `0x69007702764179f14F51cdce752f4f775d74E139` |
 | v1.1.0 | `0x77021100bD87b7008E5E1989d0eB38555d0d0000` |
 
-v1.1.0 shipped in 2026-08 alongside v1.0.0. New accounts default to v1.1.0 where available; already-delegated accounts stay on their current version until re-delegated. Both point at `SemiModularAccount7702`. The set of accepted delegation addresses is not user-configurable — verify the target address is one of the two above before signing an authorization.
+Both point at `SemiModularAccount7702` and are deployed on every supported EIP-7702 network. Already-delegated accounts stay on their current version until re-delegated. The set of accepted delegation addresses is not user-configurable.
+
+**Default-delegation timeline for new accounts:**
+
+* Before **September 14, 2026** — new 7702 accounts created via Wallet APIs delegate to **v1.0.0**.
+* **September 14, 2026 onward** — new 7702 accounts delegate to **v1.1.0** by default. v1.1.0 adds a fallback signature path so signatures from the underlying EOA are accepted alongside the account's default signer.
+
+If your app validates delegation addresses (e.g., an allowlist check before signing an authorization), allowlist the v1.1.0 address before September 14 so new users don't fail validation. Existing on-chain delegations are not upgraded in place; they retain their version unless the caller explicitly re-delegates.
 
 Undelegating restores the EOA by delegating to `0x0000000000000000000000000000000000000000`.
 

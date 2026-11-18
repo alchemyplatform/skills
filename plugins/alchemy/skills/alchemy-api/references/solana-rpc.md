@@ -9,7 +9,7 @@ tags:
 related:
   - solana-das-api.md
   - solana-wallets.md
-updated: 2026-08-24
+updated: 2026-09-02
 ---
 # Solana JSON-RPC
 
@@ -263,6 +263,51 @@ Prefer `getTransactionsForAddress` over `getSignaturesForAddress` + per-signatur
 
 ---
 
+## `getProgramAccountsV2`
+
+Helius-compatible successor to `getProgramAccounts` with server-side pagination and incremental updates. Backward-compatible with V1 params (`commitment`, `minContextSlot`, `withContext`, `encoding`, `dataSlice`, `filters`) plus three additions:
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `pubkey` | string | Yes | — | Base58 program ID (e.g., SPL Token: `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`) |
+| `config.limit` | integer | No | `1000` | 1–10,000. Maximum accounts per page. |
+| `config.paginationKey` | string | No | — | Base-58 cursor returned by a prior response. `null` on the last page. |
+| `config.changedSinceSlot` | integer | No | — | Only return accounts whose `slot > changedSinceSlot`. Enables incremental sync. |
+| `config.withContext` | boolean | No | `false` | If `true`, wraps the result in `{context, value}`; otherwise returns the bare page. |
+
+**Result shape** (`oneOf`):
+
+* `withContext: false | omitted` → `{ accounts: [...], paginationKey: <string|null> }`.
+* `withContext: true` → `{ context: {slot, apiVersion}, value: { accounts: [...], paginationKey: <string|null> } }`.
+
+Each entry in `accounts[]` matches the V1 `{pubkey, account: {lamports, owner, executable, rentEpoch, data, space}}` shape.
+
+Priced identically to `getProgramAccounts` (20 CU / 117 throughput CU). Use V2 whenever you need pagination beyond the natural page size, or want to incrementally sync only accounts that changed since a known slot. V1 stays supported; both live on the same standard endpoint.
+
+### Request
+
+```bash
+curl -s -X POST https://solana-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "getProgramAccountsV2",
+    "params": [
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      {
+        "encoding": "base64",
+        "filters": [{"dataSize": 165}],
+        "limit": 1000
+      }
+    ]
+  }'
+```
+
+Page through by re-sending the same params plus `paginationKey: <cursor>` from the prior response until the returned `paginationKey` is `null`.
+
+---
+
 ## Other Common Methods
 
 | Method | Description |
@@ -273,7 +318,8 @@ Prefer `getTransactionsForAddress` over `getSignaturesForAddress` + per-signatur
 | `getLatestBlockhash` | Latest blockhash with expiry info |
 | `sendTransaction` | Submit a signed transaction |
 | `simulateTransaction` | Simulate a transaction |
-| `getProgramAccounts` | Accounts owned by a program |
+| `getProgramAccounts` | Accounts owned by a program (V1) |
+| `getProgramAccountsV2` | Same, with server-side pagination + `changedSinceSlot` |
 | `getTokenAccountsByOwner` | SPL token accounts for a wallet |
 
 ---

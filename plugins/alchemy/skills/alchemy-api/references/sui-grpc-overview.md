@@ -9,7 +9,7 @@ tags:
 related:
   - operational-supported-networks.md
   - operational-auth-and-keys.md
-updated: 2026-04-15
+updated: 2026-09-02
 metadata:
   author: alchemyplatform
   version: "1.0"
@@ -17,12 +17,18 @@ metadata:
 # Sui gRPC
 
 ## Summary
-Sui gRPC is a high-performance API for Sui blockchain access using Protocol Buffers and gRPC. It provides strongly typed, binary-encoded access to objects, transactions, balances, Move packages, name resolution, real-time checkpoint streaming, and signature verification.
+Sui gRPC is a high-performance API for Sui blockchain access using Protocol Buffers and gRPC. It provides strongly typed, binary-encoded access to objects, transactions, balances, Move packages, name resolution, real-time streaming (checkpoints, transactions, events), and signature verification.
+
+## Sui JSON-RPC end-of-support: September 25, 2026
+
+Sui JSON-RPC is being retired network-wide. Alchemy's Sui JSON-RPC support ends on **September 25, 2026**. Migrate to Sui gRPC before that date. Every JSON-RPC method has a documented gRPC replacement — see the [Sui JSON-RPC Migration Guide](https://www.alchemy.com/docs/reference/sui-json-rpc-migration-guide) for the full mapping and behavior differences that break a naive port (streaming replaces polling, `read_mask` replaces per-method verbosity flags, `unsafe_*` transaction-building moves off-chain).
+
+The migration surface is nontrivial: 51 JSON-RPC methods across the `sui`, `suix`, and `unsafe` namespaces. Do not rely on JSON-RPC for new builds; existing integrations should plan the cutover in advance.
 
 ## Why Use Sui gRPC Over JSON-RPC
 - **Strongly typed** — Protocol Buffers provide strict typing and schema validation.
 - **Efficient serialization** — Binary encoding reduces payload size vs JSON.
-- **Streaming** — `SubscribeCheckpoints` delivers real-time checkpoint data via server-streaming RPC.
+- **Streaming** — `SubscribeCheckpoints`, `SubscribeTransactions`, `SubscribeEvents` deliver real-time data via server-streaming RPC. `ListCheckpoints`, `ListTransactions`, `ListEvents` cover cursor-bounded historical ranges from the same service.
 - **Field masking** — Use `read_mask` to request only the fields you need.
 - **Batch operations** — Fetch multiple objects or transactions in a single request.
 

@@ -9,7 +9,7 @@ tags:
 related:
   - node-json-rpc.md
   - solana-rpc.md
-updated: 2026-08-26
+updated: 2026-09-02
 ---
 # Supported Networks
 
@@ -25,7 +25,7 @@ Alchemy supports multiple EVM, Solana, and UTXO networks. Always verify network 
 - **Bitcoin Cash, Litecoin, Dogecoin** — added as UTXO JSON-RPC chains alongside Bitcoin. Network slugs: `bitcoincash-mainnet`, `bitcoincash-testnet`, `litecoin-mainnet`, `litecoin-testnet`, `dogecoin-mainnet`. All four share the same Bitcoin-Core-style JSON-RPC method set (`getblock`, `sendrawtransaction`, etc.) and a common UTXO REST API (Trezor Blockbook-derived). The UTXO REST surface is mounted under `https://{network}.g.alchemy.com/v2/{apiKey}/api/v2/...` across all seven UTXO networks (the four new ones plus `bitcoin-mainnet` and `bitcoin-testnet4`).
 
 ## Recently Deprecated / Removed
-- **Degen Mainnet** — deprecation notice added 2026-08. Alchemy support for `degen-mainnet` ends **Aug 31, 2026**. `degen-sepolia` is unaffected (pre-release / handled separately). See the [Degen Mainnet deprecation notice](https://www.alchemy.com/docs/reference/degen/degen-deprecation-notice).
+- **Degen Chain (Mainnet + Sepolia)** — full-chain post-cutoff removal 2026-09. Alchemy support for `degen-mainnet` ended **Aug 31, 2026**, and `degen-sepolia` was removed at the same time (initial notice was mainnet-only; scope expanded on 2026-09-02 to cover both networks). See the [Degen Chain deprecation notice](https://www.alchemy.com/docs/reference/degen/degen-deprecation-notice).
 - **Polygon zkEVM Mainnet + Cardona** — full-chain shutdown. `polygonzkevm-mainnet` and `polygonzkevm-cardona` were removed 2026-08 after the July 1, 2026 network shutdown. See the [Polygon zkEVM deprecation notice](https://www.alchemy.com/docs/reference/polygon-zkevm/polygon-zkevm-deprecation-notice).
 - **Botanix Mainnet** — full-chain shutdown 2026-08 post-cutoff removal following the earlier deprecation notice. `botanix-mainnet` is no longer supported. See the [Botanix deprecation notice](https://www.alchemy.com/docs/reference/botanix/botanix-deprecation-notice).
 - **Scroll Sepolia** — support ended **July 30, 2026**. `scroll-sepolia` removed from OpenRPC / OpenAPI specs and supported-chains lists. Scroll Mainnet is unaffected.
@@ -142,7 +142,6 @@ clankermon-mainnet
 commons-mainnet
 crossfi-mainnet
 crossfi-testnet
-degen-sepolia
 dogecoin-mainnet
 earnm-mainnet
 earnm-sepolia

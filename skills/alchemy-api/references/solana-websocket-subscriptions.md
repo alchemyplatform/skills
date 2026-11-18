@@ -11,13 +11,17 @@ related:
   - solana-rpc.md
   - node-websocket-subscriptions.md
   - solana-grpc-overview.md
-updated: 2026-05-06
+updated: 2026-09-02
 ---
 # Solana WebSocket Subscriptions (PubSub)
 
 Solana exposes a PubSub WebSocket API alongside its standard HTTP JSON-RPC. Each subscription opens a long-lived stream that pushes notifications when on-chain state changes.
 
-**Base URL**: `wss://solana-mainnet.g.alchemy.com/v2/$ALCHEMY_API_KEY` (or `solana-devnet`)
+**Base URL** (both networks are on Alchemy's streaming host as of 2026-08 / 2026-09):
+* Mainnet: `wss://solana-mainnet.streaming.alchemy.com/v2/$ALCHEMY_API_KEY`
+* Devnet: `wss://solana-devnet.streaming.alchemy.com/v2/$ALCHEMY_API_KEY`
+
+The streaming host serves gRPC (Yellowstone) and PubSub WebSockets only. HTTP JSON-RPC methods (`getSlot`, `getLatestBlockhash`, `sendTransaction`, etc.) stay on `solana-{mainnet,devnet}.g.alchemy.com/v2/$ALCHEMY_API_KEY`. When wiring `@solana/web3.js`'s `Connection`, pass `wsEndpoint: "wss://solana-mainnet.streaming.alchemy.com/v2/..."` alongside the HTTP URL on `.g.alchemy.com`.
 
 Solana uses native `*Subscribe` / `*Unsubscribe` methods. There is **no** `eth_subscribe` on Solana. Each `*Subscribe` call returns a numeric `subscription` id; pass it to the matching `*Unsubscribe` to cancel the stream.
 
@@ -30,6 +34,7 @@ Solana uses native `*Subscribe` / `*Unsubscribe` methods. There is **no** `eth_s
 | Wait for a single transaction to reach commitment | `signatureSubscribe` (auto-cancels after firing) |
 | Track validator slot progress | `slotSubscribe` |
 | Track the validator's new root slot | `rootSubscribe` |
+| Stream full block notifications (Alchemy streaming endpoint only) | `blockSubscribe` |
 | High-throughput indexing across the cluster | switch to Yellowstone gRPC — see `solana-grpc-overview.md` |
 
 ## Methods
@@ -63,6 +68,17 @@ Notifies when the validator processes a new slot. Notification payload: `{ slot,
 
 ### `rootSubscribe` / `rootUnsubscribe`
 Notifies when the validator sets a new root slot. Notification payload: a single slot number. No params.
+
+### `blockSubscribe` / `blockUnsubscribe` (streaming endpoint only)
+Streams full block notifications. **Only available on Alchemy's Solana streaming endpoint (`wss://solana-{mainnet,devnet}.streaming.alchemy.com`).** The standard `wss://solana-{mainnet,devnet}.g.alchemy.com` endpoint returns `-32601 Method 'blockSubscribe' not found`.
+
+- Params (positional): `filter` — either `"all"` or `{ "mentionsAccountOrProgram": "<pubkey>" }`. Optional `{ commitment, encoding, transactionDetails, showRewards, maxSupportedTransactionVersion }`.
+- `commitment` supports `confirmed` and `finalized` (not `processed`, per upstream Solana semantics).
+- `transactionDetails`: `"full"`, `"accounts"`, `"signatures"`, or `"none"`.
+- `encoding`: `"json"`, `"jsonParsed"`, `"base58"`, or `"base64"`.
+- **Set `maxSupportedTransactionVersion: 0` explicitly.** Omitting it returns `block: null` with `err: { UnsupportedTransactionVersion: 0 }` for every notification.
+- Upstream marks `blockSubscribe` as unstable; the API surface may change. Expect high volume — pair with `mentionsAccountOrProgram` and `transactionDetails: "signatures"` if you don't need full tx payloads.
+- `@solana/web3.js` does NOT wrap `blockSubscribe`. Send raw JSON-RPC over a plain `ws` WebSocket.
 
 ## Request Format
 PubSub uses JSON-RPC 2.0 over a persistent WebSocket. After a subscribe request succeeds, the server returns the numeric subscription id in the response, then pushes notifications under a method-specific name (`accountNotification`, `logsNotification`, etc.) keyed by that id.

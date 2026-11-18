@@ -10,7 +10,7 @@ tags:
 related:
   - operational-auth-and-keys.md
   - operational-supported-networks.md
-updated: 2026-08-24
+updated: 2026-09-02
 ---
 # Admin API
 
@@ -71,6 +71,16 @@ Path prefix: `/admin-api/v1/usage`.
 |---|---|---|
 | `/usage/summary` | `GET` | Aggregate usage over a date range. Accepts `startDate`, `endDate`, optional `appIds[]`, `networks[]`, `products[]`, `metrics=amount,usd`. |
 | `/usage/timeseries` | `GET` | Time-bucketed usage across a range. Accepts the same filters as `/summary` plus `granularity=minute\|hour\|day\|month`, `groupBy`, `methods[]`, `requestTypes[]`. |
+
+### `groupBy` on `/usage/timeseries`
+
+`groupBy` accepts **up to three** comma-separated dimensions from the usage schema (`app`, `network`, `product`, `method`, `requestType`, etc.). One, two, or three dimensions are valid; a fourth returns a validation error. Common combinations:
+
+* `groupBy=network` — single-axis breakdown by chain.
+* `groupBy=app,network` — per-app / per-chain matrix (typical dashboard shape).
+* `groupBy=app,network,product` — full three-way partition. Values must be unique.
+
+Server-side aggregation happens after grouping, so wider `groupBy` returns more bucket rows but doesn't inflate totals.
 
 ### Range limits on `timeseries`
 
