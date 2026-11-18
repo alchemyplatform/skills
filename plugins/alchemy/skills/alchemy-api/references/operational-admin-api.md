@@ -94,7 +94,6 @@ The `products[]` filter accepts these product identifiers (each is metered separ
 | Product ID | Meter | Note |
 |---|---|---|
 | `SUPERNODE_CU` | Compute Units | Standard RPC / Data traffic. |
-| `SUPERNODE_ENHANCED_CU` | Enhanced CU | Chain-specific enhanced methods. |
 | `NOTIFY_CU` | Notify CU | Webhooks. |
 | `BUNDLER_CU` | Bundler CU | Wallet APIs bundler ops. |
 | `PAYMASTER_CU` | Paymaster CU | Gas Manager. |
