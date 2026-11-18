@@ -9,7 +9,7 @@ tags:
 related:
   - solana-das-api.md
   - solana-wallets.md
-updated: 2026-08-24
+updated: 2026-09-23
 ---
 # Solana JSON-RPC
 
@@ -323,6 +323,21 @@ Notes:
 - `scope: "ata"` restricts the sum to the wallet's Associated Token Account; `scope: "all"` sums across every account the wallet controls for that mint (including non-ATA accounts).
 - Pagination on `getTokenAccountsByOwnerAtSlot` uses `pageKey` / `pageLimit`; the response includes a next-page `pageKey` when more results exist.
 - Point-in-time coverage matches the Account Archive service (from July 2025 forward).
+
+### `getTokenHoldersAtSlot`
+
+Alchemy-custom Solana JSON-RPC method that starts from an SPL Token or Token-2022 **mint** and enumerates the token accounts holding that mint at a specific slot, ranked by balance. This is the mint-side complement to `getTokenAccountsByOwnerAtSlot` / `getBalanceByOwnerAtSlot`, which start from a wallet. Solana mainnet only; `paramStructure: by-name` (positional array form `[mint, slot, limit, sortBy]` is also accepted).
+
+| Param | Required | Description |
+|---|---|---|
+| `mint` | Yes | Base58 SPL Token or Token-2022 mint pubkey. |
+| `slot` | Yes | Historical slot to query. Coverage matches the Account Archive service (from July 2025 forward). |
+| `limit` | No | Max holders to return. |
+| `sortBy` | No | `"balance_desc"` (default) or `"balance_asc"`. Case-sensitive enum — passing camelCase or PascalCase yields `-32602`. |
+
+Result is a list of `{ owner, tokenAccount, balance, uiAmount, decimals, mint }` entries in the requested order. `balance` is the raw on-chain integer amount; `uiAmount` is the scaled human-readable amount using the mint's `decimals`. Errors: `-32020` (slot out of Account Archive coverage), `-32602` (invalid params / bad enum value).
+
+Compute unit cost is not yet listed on the pricing page — the method is currently `x-bot-ignore`-guarded until upstream chain-config catches up. Sibling AtSlot methods are 40 CU.
 
 ## Jito bundles
 
